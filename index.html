@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kalkulator Penghitung Lembur by Kahfi</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>Kalkulator Penghitung Lembur</h1>
+    <p class="by">by Kahfi</p>
+    <p class="sub">Hitung upah lembur hari kerja biasa, Sabtu, dan Minggu sesuai PP No. 35 Tahun 2021, lengkap dengan rincian per jam.</p>
+  </header>
+
+  <section class="card neon" aria-labelledby="h-in">
+    <h2 id="h-in">Data lembur</h2>
+    <div class="grid">
+      <div>
+        <label for="gaji">Gaji pokok per bulan (Rp)</label>
+        <input id="gaji" type="text" inputmode="numeric" placeholder="6.000.000" autocomplete="off">
+      </div>
+      <div>
+        <label for="tunj">Tunjangan tetap per bulan (Rp)</label>
+        <input id="tunj" type="text" inputmode="numeric" placeholder="0" autocomplete="off">
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <span class="lbl" id="l-sis">Sistem hari kerja (40 jam per minggu)</span>
+      <div class="seg" role="radiogroup" aria-labelledby="l-sis">
+        <label><input type="radio" name="sis" value="5" checked><span>5 hari kerja</span></label>
+        <label><input type="radio" name="sis" value="6"><span>6 hari kerja</span></label>
+      </div>
+    </div>
+    <div style="margin-top:18px">
+      <span class="lbl">Hari lembur</span>
+      <div id="entries"></div>
+      <button type="button" class="add" id="add">+ Tambah hari lembur</button>
+    </div>
+    <p class="err" id="err" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="go" id="go">Hitung lembur</button>
+      <button type="button" id="reset">Reset</button>
+    </div>
+  </section>
+
+  <section class="card neon" id="out" aria-labelledby="h-out" aria-live="polite" hidden>
+    <h2 id="h-out">Hasil perhitungan</h2>
+    <div class="meta">Total upah lembur (kotor)</div>
+    <div class="total" id="total">Rp0</div>
+    <div class="meta">Upah sejam: <b id="sejam"></b> dari upah sebulan <b id="sebulan"></b></div>
+    <div class="formula" id="formula"></div>
+    <div id="tables"></div>
+    <div id="warns"></div>
+    <div class="actions"><button type="button" id="copy">Salin hasil</button></div>
+  </section>
+
+  <section class="disc" aria-labelledby="h-disc">
+    <h2 id="h-disc">Disclaimer cara hitung</h2>
+    <ol>
+      <li>Hasil di sini adalah <b>estimasi</b> berdasarkan PP No. 35 Tahun 2021 dan bukan nasihat hukum.</li>
+      <li>Upah sejam dihitung dengan rumus <b>1/173 × upah sebulan</b> (gaji pokok + tunjangan tetap). Komponen tidak tetap seperti bonus atau uang makan harian tidak ikut dihitung.</li>
+      <li>Pengali lembur mengikuti sistem kerja yang dipilih (5 atau 6 hari kerja, 40 jam seminggu). Sektor atau jabatan tertentu bisa punya aturan berbeda.</li>
+      <li>Pada 6 hari kerja, Sabtu diperlakukan sebagai hari kerja biasa (jam ke-1 × 1,5, jam berikutnya × 2) kecuali dicentang libur resmi. Pastikan ke Disnaker bila perusahaan Anda memakai tafsir lain.</li>
+      <li>Untuk hari kerja biasa, lembur dihitung dari total jam kerja dikurangi jam normal (8 jam pada 5 hari kerja, 7 jam pada 6 hari kerja): jam ke-1 × 1,5, jam berikutnya × 2. Istirahat tidak dihitung sebagai jam kerja.</li>
+      <li>Hasil adalah nilai kotor sebelum PPh 21, BPJS, atau potongan lain, dan dibulatkan ke rupiah terdekat.</li>
+      <li>Peraturan perusahaan atau perjanjian kerja bersama boleh lebih menguntungkan pekerja, tetapi tidak boleh lebih rendah dari aturan pemerintah.</li>
+      <li>Untuk sengketa atau kepastian hukum, konsultasikan ke Disnaker, serikat pekerja, atau konsultan hukum. Data Anda diproses di perangkat ini dan tidak dikirim ke mana pun.</li>
+    </ol>
+  </section>
+
+  <footer>Dibuat oleh <b>Kahfi</b></footer>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
