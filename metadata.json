@@ -1,0 +1,8 @@
+{
+  "name": "Kalkulator Penghitung Lembur by Kahfi",
+  "description": "Kalkulator presisi upah lembur dan estimasi gaji karyawan sesuai PP No. 35 Tahun 2021 dengan rincian per jam, mode harian & bulanan, dashboard riwayat, dan ekspor bukti slip PNG.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

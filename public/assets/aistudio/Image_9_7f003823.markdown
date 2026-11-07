@@ -1,0 +1,216 @@
+---
+name: Cyberpunk Precision Labor Engine
+colors:
+  surface: '#13131b'
+  surface-dim: '#13131b'
+  surface-bright: '#393842'
+  surface-container-lowest: '#0d0d16'
+  surface-container-low: '#1b1b23'
+  surface-container: '#1f1f27'
+  surface-container-high: '#292932'
+  surface-container-highest: '#34343d'
+  on-surface: '#e4e1ed'
+  on-surface-variant: '#b9cacb'
+  inverse-surface: '#e4e1ed'
+  inverse-on-surface: '#302f39'
+  outline: '#849495'
+  outline-variant: '#3b494b'
+  surface-tint: '#00dbe9'
+  primary: '#dbfcff'
+  on-primary: '#00363a'
+  primary-container: '#00f0ff'
+  on-primary-container: '#006970'
+  inverse-primary: '#006970'
+  secondary: '#ffade2'
+  on-secondary: '#5f004e'
+  secondary-container: '#ff2fd6'
+  on-secondary-container: '#530044'
+  tertiary: '#e1ffd1'
+  on-tertiary: '#053900'
+  tertiary-container: '#33fb0a'
+  on-tertiary-container: '#106e00'
+  error: '#ffb4ab'
+  on-error: '#690005'
+  error-container: '#93000a'
+  on-error-container: '#ffdad6'
+  primary-fixed: '#7df4ff'
+  primary-fixed-dim: '#00dbe9'
+  on-primary-fixed: '#002022'
+  on-primary-fixed-variant: '#004f54'
+  secondary-fixed: '#ffd8ee'
+  secondary-fixed-dim: '#ffade2'
+  on-secondary-fixed: '#3b002f'
+  on-secondary-fixed-variant: '#86006f'
+  tertiary-fixed: '#79ff5b'
+  tertiary-fixed-dim: '#2ae500'
+  on-tertiary-fixed: '#022100'
+  on-tertiary-fixed-variant: '#095300'
+  background: '#13131b'
+  on-background: '#e4e1ed'
+  surface-variant: '#34343d'
+typography:
+  headline-xl:
+    fontFamily: Space Grotesk
+    fontSize: 3rem
+    fontWeight: '700'
+    lineHeight: 3.5rem
+    letterSpacing: -0.02em
+  headline-xl-mobile:
+    fontFamily: Space Grotesk
+    fontSize: 2rem
+    fontWeight: '700'
+    lineHeight: 2.5rem
+    letterSpacing: -0.01em
+  headline-lg:
+    fontFamily: Space Grotesk
+    fontSize: 2rem
+    fontWeight: '700'
+    lineHeight: 2.5rem
+    letterSpacing: -0.01em
+  headline-md:
+    fontFamily: Space Grotesk
+    fontSize: 1.5rem
+    fontWeight: '600'
+    lineHeight: 2rem
+  headline-sm:
+    fontFamily: Space Grotesk
+    fontSize: 1.125rem
+    fontWeight: '600'
+    lineHeight: 1.5rem
+  body-lg:
+    fontFamily: Inter
+    fontSize: 1rem
+    fontWeight: '400'
+    lineHeight: 1.5rem
+  body-md:
+    fontFamily: Inter
+    fontSize: 0.875rem
+    fontWeight: '400'
+    lineHeight: 1.25rem
+  body-sm:
+    fontFamily: Inter
+    fontSize: 0.75rem
+    fontWeight: '400'
+    lineHeight: 1rem
+  tabular-hero:
+    fontFamily: JetBrains Mono
+    fontSize: 2.25rem
+    fontWeight: '700'
+    lineHeight: 2.75rem
+    letterSpacing: -0.02em
+  tabular-hero-mobile:
+    fontFamily: JetBrains Mono
+    fontSize: 1.5rem
+    fontWeight: '700'
+    lineHeight: 2rem
+    letterSpacing: -0.01em
+  tabular-md:
+    fontFamily: JetBrains Mono
+    fontSize: 1rem
+    fontWeight: '500'
+    lineHeight: 1.25rem
+  label-code:
+    fontFamily: JetBrains Mono
+    fontSize: 0.75rem
+    fontWeight: '600'
+    lineHeight: 1rem
+    letterSpacing: 0.06em
+rounded:
+  sm: 0.125rem
+  DEFAULT: 0.25rem
+  md: 0.375rem
+  lg: 0.5rem
+  xl: 0.75rem
+  full: 9999px
+spacing:
+  gutter: 1.5rem
+  gutter-mobile: 0.75rem
+  margin: 2rem
+  margin-mobile: 1rem
+  space-xs: 0.25rem
+  space-sm: 0.5rem
+  space-md: 1rem
+  space-lg: 1.5rem
+  space-xl: 2.5rem
+---
+
+## Brand & Style
+The design system delivers an authoritative, high-precision utility interface framed in a calibrated modern cyberpunk / dark neon tech aesthetic. It treats labor calculation, legal compliance (PP 35/2021), and financial compensation not as sterile spreadsheets, but as a mission-critical computational terminal. 
+
+The emotional response balances the thrill of speculative neon interfaces with the crystalline legibility and reassurance demanded by legal and financial calculations. The aesthetic avoids muddy retro nostalgia or gratuitous lens flares, instead employing razor-thin 1px luminescence, precise tabular metrics, tactical dark obsidian surfaces, and chromatic accents that immediately clarify hierarchy and statutory boundaries.
+
+## Colors
+The palette is rooted in deep structural darkness punctuated by high-frequency spectral signals:
+- **Canvas Base (`#0A0A12`)**: Ultra-deep indigo-tinted void creating infinite contrast. Supported by ambient backdrop radial gradients of deep violet (`rgba(98, 0, 238, 0.08)`) centered beneath key calculation areas.
+- **Surface Elevation (`#12121F`)**: Cold synthetic obsidian serving as the standard module layer. Elevates above the canvas with hairline luminous strokes.
+- **Surface Highlight / Input Surface (`#1A1A2E`)**: Recessed actionable state for field entry, inactive badges, and modular table lanes.
+- **Cyan Neon (`#00F0FF`) [Primary]**: Technical focus state, cursor pulses, active toggles, table borders, and standard statutory badges.
+- **Magenta Neon (`#FF2BD6`) [Secondary]**: High-energy gradient partner, decorative badges, and structural system highlights.
+- **Green Neon (`#39FF14`) [Success / Core KPI Output]**: Dedicated strictly to gross and net overtime totals, definitive earnings, and verified legal statuses.
+- **Yellow Neon (`#FFE600`) [Warning / Compliance]**: Reserved for legal advisories, PP 35/2021 statutory warnings, and excess shift overtime alerts.
+- **Muted Text / Grid Lines (`#7A7A99`)**: High-legibility neutral gray for secondary labels, ensuring eye strain is mitigated against high neon contrast.
+
+## Typography
+The system employs a 3-tier typographic architecture:
+1. **Space Grotesk** powers structural titles and section headers, bringing sharp angles, technical geometry, and high-impact futuristic posture.
+2. **Inter** handles high-density microcopy, legal summaries, helper tooltips, and standard system labels, guaranteeing zero readability fatigue.
+3. **JetBrains Mono** is enforced across all financial values, hourly calculation matrices, timestamps, and statutory multipliers (1.5x, 2.0x, 3.0x, 4.0x) to eliminate tabular jitter and maintain strict vertical optical alignment.
+
+## Layout & Spacing
+The layout adheres to a 12-column adaptive computing grid on desktop (max content width: 1280px) and a unified single-column stream on mobile screens.
+
+- **Breakpoints**:
+  - Desktop: `>= 1024px` (Dual-column: left column for multi-tier parameter inputs, right column for live KPI telemetry and breakdown grid).
+  - Tablet: `768px - 1023px` (Stacked column layout, metrics pinned beneath parameter inputs).
+  - Mobile: `< 768px` (Fluid edge-to-edge calculation deck with fixed safe-area bottom navigation).
+- **Rhythm**: 8px baseline cadence governs internal paddings (`space-sm` for compact tags, `space-md` for standard forms, `space-lg` for KPI modules, `space-xl` for outer section boundaries).
+
+## Elevation & Depth
+Depth is produced through translucent dark glass layering, dark perimeter chiseled borders, and controlled photometric neon diffusion:
+
+- **Level 0 (Backdrop)**: Solid `#0A0A12` with subtle pseudo-element radial glows: `radial-gradient(circle at 50% 0%, rgba(138, 43, 226, 0.15), transparent 60%)`.
+- **Level 1 (Card & Module Shells)**: Surface `#12121F` rendered with `backdrop-filter: blur(16px)` and a crisp 1px stroke `border: 1px solid rgba(0, 240, 255, 0.12)`.
+- **Level 2 (Interactive Floating Elements & Modals)**: Surface `#161626` backed by `box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(0, 240, 255, 0.2)`.
+- **Level 3 (Focused State / Active Glow)**: Applied when inputs engage focus or cards enter active calculation state: `box-shadow: 0 0 20px -3px rgba(0, 240, 255, 0.35), inset 0 0 8px rgba(0, 240, 255, 0.15)`.
+- **Warning Depth Overlay**: Reserved for statutory compliance modules: 1px solid `rgba(255, 230, 0, 0.3)` paired with ambient shadow `0 0 24px -6px rgba(255, 230, 0, 0.2)`.
+
+## Shapes
+The visual identity utilizes a tactical, technical geometry (roundedness level 1: `0.25rem` base, `0.5rem` for cards/modals, `0.75rem` for large canvases). 
+
+Curves are restrained and tight, preserving a cybernetic structural appearance rather than casual consumer softness. Decorative badges, code tags, and export action buttons utilize subtle corner clips (angled chamfers) or disciplined 4px radius geometry to accentuate industrial instrumentation.
+
+## Components
+
+### Numeric Rupiah Input Fields
+- **Container**: Surface `#1A1A2E`, 1px border `rgba(255, 255, 255, 0.08)`, 4px border radius.
+- **Prefix**: Fixed `Rp` badge styled in `#00F0FF`, monospace font, high-contrast cyan background tint (`rgba(0, 240, 255, 0.1)`).
+- **Text Entry**: `JetBrains Mono`, 1.125rem, clean white `#FFFFFF`.
+- **Focus Transition**: Border changes instantly to `#00F0FF` with a 12px outer glow (`0 0 16px rgba(0, 240, 255, 0.35)`).
+
+### Action Buttons
+- **Primary CTA (Calculate / Save)**: Gradient background `linear-gradient(135deg, #00F0FF 0%, #0082FB 100%)`, text color `#0A0A12`, font weight 700. Active click produces an outward radiant shockwave.
+- **Secondary Gradient CTA (Export / Generate)**: Gradient background `linear-gradient(135deg, #FF2BD6 0%, #7928CA 100%)`, crisp white text, 12px magenta glow on hover.
+- **Tertiary / Utility Button**: Dark surface `#1A1A2E`, 1px border `rgba(0, 240, 255, 0.25)`, cyan text, zero blur until hovered.
+
+### KPI Summary Cards (The Overtime Dashboard Deck)
+- **Gross Output Card**: Surface `#12121F`, bordered in 1px `rgba(57, 255, 20, 0.3)`. Features a top right status pill `RESMI PP 35/2021` in neon yellow mono text.
+- **The Core Metric**: Value rendered in `tabular-hero` font using high-luminosity `#39FF14` with a text shadow `0 0 20px rgba(57, 255, 20, 0.4)`.
+- **Auxiliary Metrics**: Total Jam Lembur, Upah Sejam (1/173), and PPh 21 estimasi rendered in muted white/gray tabular monospace.
+
+### Breakdown Table (Hourly Calculation Matrix)
+- **Header**: `#0A0A12`, uppercase `label-code` in muted `#7A7A99`, bottom hairline border in `rgba(0, 240, 255, 0.2)`.
+- **Rows**: Alternating fills between transparent and `rgba(255, 255, 255, 0.015)`. Hover state activates a faint horizontal beam: background `rgba(0, 240, 255, 0.04)`.
+- **Multiplier Pills**: Monospaced tags (`x1.5`, `x2.0`, `x3.0`, `x4.0`) enclosed in cyan or magenta micro-capsules (`border: 1px solid rgba(0, 240, 255, 0.4)`).
+
+### Adaptive Navigation
+- **Desktop (Top Deck Bar)**: Pinned glass bar with 1px border bottom (`rgba(255, 255, 255, 0.08)`). Tab items feature an active cyan underline that casts a faint downwards glow.
+- **Mobile (Tactical Bottom Dock)**: Fixed to bottom with safe-area padding. Translucent `#0A0A12EE` backdrop with `backdrop-filter: blur(20px)`. Active item features an overhead cyan dot indicator and magenta text highlight.
+
+### Statutory Disclaimer Banner (PP 35/2021)
+- Left edge accented by a solid 3px neon yellow (`#FFE600`) vertical bar.
+- Background `rgba(255, 230, 0, 0.04)`.
+- Text styled in `body-sm` with highlighted legal articles rendered in bold `#FFE600`.
+
+### Shareable Result Receipt / Export PNG Card
+- Self-contained dark module (`#0E0E18`) encased in a dual-color border gradient (`#00F0FF` fading to `#FF2BD6`).
+- Integrated watermark, timestamp verification hash in `JetBrains Mono`, Kahfi signature tag, and scannable verification styling.
