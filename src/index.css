@@ -1,0 +1,431 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-heading: 'Space Grotesk', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  /* Support light and dark theme base backgrounds */
+  html.light body {
+    background-color: #F8FAFC;
+    color: #0F172A;
+  }
+
+  html.dark body {
+    background-color: #0A0A12;
+    color: #E4E1ED;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: #0A0A12;
+    color: #E4E1ED;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  .font-mono, code, kbd, samp, pre {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Custom Cyberpunk & Precision Labor Engine Utilities */
+.cyber-canvas {
+  background-color: #0A0A12;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(138, 43, 226, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 10% 30%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 90% 70%, rgba(255, 43, 214, 0.04) 0%, transparent 50%),
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+}
+
+.cyber-card {
+  background: #12121F;
+  border: 1px solid rgba(0, 240, 255, 0.12);
+  box-shadow: 0 4px 24px -2px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+}
+
+.cyber-card-active {
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: 0 0 20px -3px rgba(0, 240, 255, 0.25), inset 0 0 8px rgba(0, 240, 255, 0.08);
+}
+
+.cyber-input {
+  background: #1A1A2E;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--font-mono);
+  color: #FFFFFF;
+  transition: all 0.2s ease-in-out;
+}
+
+.cyber-input:focus {
+  outline: none;
+  border-color: #00F0FF;
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35), inset 0 0 8px rgba(0, 240, 255, 0.1);
+}
+
+/* Accessible Overtime Striped Pattern (#00F0FF) */
+.bar-overtime-striped {
+  background-color: #00F0FF;
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(10, 10, 18, 0.25),
+    rgba(10, 10, 18, 0.25) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.glow-cyan {
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35);
+}
+
+.glow-magenta {
+  box-shadow: 0 0 16px rgba(255, 43, 214, 0.35);
+}
+
+.glow-green {
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.35);
+}
+
+.text-glow-green {
+  text-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
+}
+
+.text-glow-magenta {
+  text-shadow: 0 0 16px rgba(255, 43, 214, 0.5);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A12;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #29293D;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00F0FF;
+}
+
+/* Print styles for export preview or print dialog */
+@media print {
+  body {
+    background: #FFFFFF !important;
+    color: #111827 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================
+   LIGHT THEME OVERRIDES (when html has class .light)
+   ========================================================= */
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+html.light .cyber-canvas {
+  background-color: #F8FAFC !important;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+    radial-gradient(circle at 10% 30%, rgba(14, 165, 233, 0.06) 0%, transparent 40%),
+    radial-gradient(circle at 90% 70%, rgba(244, 63, 94, 0.04) 0%, transparent 50%),
+    linear-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.035) 1px, transparent 1px) !important;
+  color: #0F172A !important;
+}
+
+/* Header & Nav in Light Mode */
+html.light header {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #E2E8F0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+html.light nav[role="tablist"] {
+  background-color: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light .md\:hidden.fixed.bottom-0 {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-top-color: #E2E8F0 !important;
+}
+
+/* Card Surfaces in Light Mode */
+html.light .cyber-card,
+html.light [class*="bg-[#12121F]"],
+html.light [class*="bg-[#12121f]"] {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Sub-panels, Badges & Secondary Blocks */
+html.light [class*="bg-[#0A0A12]"],
+html.light [class*="bg-[#0a0a12]"] {
+  background-color: #F8FAFC !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light [class*="bg-[#161626]"],
+html.light [class*="bg-[#161626]"] {
+  background-color: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light [class*="bg-[#1A1A2E]"],
+html.light [class*="bg-[#1a1a2e]"],
+html.light .cyber-input {
+  background-color: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+/* Input elements in Light Mode */
+html.light input:not([type="checkbox"]):not([type="radio"]),
+html.light select,
+html.light textarea {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+html.light input:not([type="checkbox"]):not([type="radio"]):focus,
+html.light select:focus,
+html.light textarea:focus {
+  border-color: #0284C7 !important;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+}
+
+/* Text Colors in Light Mode */
+html.light .text-white,
+html.light [class*="text-white/"] {
+  color: #0F172A !important;
+}
+
+html.light .text-\[\#E4E1ED\],
+html.light .text-\[\#e4e1ed\] {
+  color: #1E293B !important;
+}
+
+html.light .text-\[\#b9cacb\] {
+  color: #475569 !important;
+}
+
+html.light .text-\[\#7A7A99\],
+html.light .text-\[\#7a7a99\] {
+  color: #64748B !important;
+}
+
+/* High Contrast Accent text in Light Mode */
+html.light .text-\[\#00F0FF\],
+html.light .text-\[\#00f0ff\] {
+  color: #0284C7 !important;
+}
+
+html.light .text-\[\#39FF14\],
+html.light .text-\[\#39ff14\] {
+  color: #16A34A !important;
+}
+
+html.light .text-\[\#FFE600\],
+html.light .text-\[\#ffe600\] {
+  color: #D97706 !important;
+}
+
+html.light .text-\[\#FF2BD6\],
+html.light .text-\[\#ff2bd6\] {
+  color: #DB2777 !important;
+}
+
+html.light .text-\[\#dbfcff\] {
+  color: #1E293B !important;
+}
+
+html.light .text-\[\#10B981\],
+html.light .text-\[\#34D399\] {
+  color: #059669 !important;
+  font-weight: 600;
+}
+
+/* Borders in Light Mode */
+html.light [class*="border-white/"],
+html.light [class*="border-white"] {
+  border-color: #E2E8F0 !important;
+}
+
+html.light [class*="divide-white/"] > * + * {
+  border-color: #E2E8F0 !important;
+}
+
+/* Modals Backdrops in Light Mode */
+html.light .fixed.inset-0.bg-black\/85,
+html.light .fixed.inset-0.bg-black\/80,
+html.light [class*="bg-black/"] {
+  background-color: rgba(15, 23, 42, 0.55) !important;
+}
+
+/* Table Hover in Light Mode */
+html.light tr.hover\:bg-white\/\[0\.02\]:hover,
+html.light tr:hover {
+  background-color: #F1F5F9 !important;
+}
+
+/* Custom Scrollbars in Light Mode */
+html.light ::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Active Selection Highlights in Light Mode */
+html.light [class*="bg-[#1A1A2E]"][class*="border-[#00F0FF]"],
+html.light [class*="bg-[#1a1a2e]"][class*="border-[#00F0FF]"] {
+  background-color: #E0F2FE !important;
+  border-color: #0284C7 !important;
+  color: #0F172A !important;
+}
+
+html.light [class*="bg-[#1A1A2E]"][class*="border-[#FF2BD6]"],
+html.light [class*="bg-[#1a1a2e]"][class*="border-[#FF2BD6]"] {
+  background-color: #FCE7F3 !important;
+  border-color: #DB2777 !important;
+  color: #0F172A !important;
+}
+
+html.light [class*="bg-[#1A1A2E]"][class*="border-[#39FF14]"],
+html.light [class*="bg-[#1a1a2e]"][class*="border-[#39FF14]"] {
+  background-color: #DCFCE7 !important;
+  border-color: #16A34A !important;
+  color: #0F172A !important;
+}
+
+html.light [class*="bg-[#1A1A2E]"][class*="border-[#FFE600]"],
+html.light [class*="bg-[#1a1a2e]"][class*="border-[#FFE600]"] {
+  background-color: #FEF3C7 !important;
+  border-color: #D97706 !important;
+  color: #0F172A !important;
+}
+
+/* Formula & Info Boxes in Light Mode */
+html.light [class*="bg-black/40"],
+html.light [class*="bg-black/50"],
+html.light [class*="bg-black/60"] {
+  background-color: #F1F5F9 !important;
+  border-color: #E2E8F0 !important;
+  color: #334155 !important;
+}
+
+/* Gradient Action Buttons text contrast */
+html.light button[class*="from-[#FF2BD6]"] {
+  color: #FFFFFF !important;
+}
+html.light button[class*="from-[#00F0FF]"] {
+  color: #0A0A12 !important;
+}
+
+/* Checkbox & Radio labels in Light Mode */
+html.light label span.font-semibold.text-white,
+html.light label .font-semibold {
+  color: #0F172A !important;
+}
+
+/* Hari Terpendek checkbox container visibility in Light Mode */
+html.light [class*="border-t"][class*="border-white/5"] {
+  border-color: #CBD5E1 !important;
+}
+
+/* #FF2BD6 background tint in Light Mode (checkbox hari terpendek badge) */
+html.light [class*="bg-[#FF2BD6]/15"] {
+  background-color: rgba(219, 39, 119, 0.12) !important;
+}
+html.light [class*="border-[#FF2BD6]/40"] {
+  border-color: rgba(219, 39, 119, 0.5) !important;
+}
+
+/* text-[#FF8C00] in Light Mode */
+html.light .text-\[\#FF8C00\] {
+  color: #B45309 !important;
+}
+html.light [class*="bg-[#FF8C00]/10"] {
+  background-color: rgba(180, 83, 9, 0.1) !important;
+}
+html.light [class*="border-[#FF8C00]/40"] {
+  border-color: rgba(180, 83, 9, 0.5) !important;
+}
+html.light [class*="bg-[#FF8C00]"]:not([class*="/10"]):not([class*="/20"]):not([class*="/30"]):not([class*="/40"]) {
+  background-color: #B45309 !important;
+}
+
+/* bg-[#FF2BD6]/10 in Light Mode (new settings modal buttons) */
+html.light [class*="bg-[#FF2BD6]/10"] {
+  background-color: rgba(219, 39, 119, 0.1) !important;
+}
+
+/* Footer in Light Mode */
+html.light footer {
+  background-color: #FFFFFF !important;
+  border-top-color: #E2E8F0 !important;
+  color: #334155 !important;
+}
+
+html.light footer .text-white {
+  color: #0F172A !important;
+}
+
+html.light footer .text-\[\#b9cacb\] {
+  color: #475569 !important;
+}
+
+html.light footer .text-\[\#7A7A99\] {
+  color: #64748B !important;
+}
+
+/* Brand badge in Light Mode */
+html.light span.bg-\[\#9333EA\] {
+  background-color: #7E22CE !important;
+  color: #FFFFFF !important;
+}
