@@ -419,7 +419,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                   <div>
                     <span className="text-[#7A7A99]">Perhitungan:</span>{' '}
                     <span className="text-white">
-                      {formatRupiah(upahHarianPokok)} (Harian) + ({jamLembur}j × {formatRupiah(manualRatePerJam)})
+                      {formatRupiah(upahHarianPokok)} (Harian) + ({jamLembur}j � {formatRupiah(manualRatePerJam)})
                     </span>
                   </div>
                   <div>
@@ -624,7 +624,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                     {sistem === '5_hari' && <span className="w-2 h-2 rounded-full bg-[#00F0FF]" />}
                   </div>
                   <div className="text-[11px] text-[#b9cacb] mt-1 font-mono">
-                    8 jam/hari • 40 jam/minggu
+                    8 jam/hari � 40 jam/minggu
                   </div>
                 </button>
 
@@ -647,7 +647,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                     {sistem === '6_hari' && <span className="w-2 h-2 rounded-full bg-[#FF2BD6]" />}
                   </div>
                   <div className="text-[11px] text-[#b9cacb] mt-1 font-mono">
-                    7 jam/hari • 40 jam/minggu
+                    7 jam/hari � 40 jam/minggu
                   </div>
                 </button>
               </div>
@@ -995,7 +995,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
 
             {/* Formula display */}
             <div className="mt-3 p-2 rounded bg-black/40 text-[11px] font-mono text-[#b9cacb] border border-white/5">
-              💡 Rumus: {calcResult.formula}
+              ?? Rumus: {calcResult.formula}
             </div>
 
             {/* Excess Overtime Warning if any */}
@@ -1079,7 +1079,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                         <td className="py-2 text-white">
                           <div className="font-semibold">{row.description}</div>
                           <div className="text-[10px] text-[#7A7A99]">
-                            {row.hoursCount} jam × {formatRupiah(row.hourlyRate)}
+                            {row.hoursCount} jam � {formatRupiah(row.hourlyRate)}
                           </div>
                         </td>
                         <td className="py-2 text-center">
@@ -1121,7 +1121,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
               <span>Disclaimer Cara Hitung PP No. 35 Tahun 2021</span>
             </div>
             <p className="text-[11px] leading-relaxed">
-              1. Upah per jam menggunakan rumus resmi <strong className="text-white">1/173 × Upah Sebulan</strong> (Gaji Pokok + Tunjangan Tetap).
+              1. Upah per jam menggunakan rumus resmi <strong className="text-white">1/173 � Upah Sebulan</strong> (Gaji Pokok + Tunjangan Tetap).
             </p>
             <p className="text-[11px] leading-relaxed">
               2. Jam istirahat <strong className="text-[#FFE600]">tidak dihitung</strong> sebagai jam kerja efektif.
@@ -1138,7 +1138,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
               >
                 PP 35/2021 (BPK) <ExternalLink className="w-2.5 h-2.5" />
               </a>
-              <span>•</span>
+              <span>�</span>
               <a
                 href="https://jdih.kemnaker.go.id/peraturan/detail/1723/peraturan-pemerintah-nomor-35-tahun-2021"
                 target="_blank"
@@ -1150,12 +1150,8 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
             </div>
           </div>
 
-          {/* Ruang Iklan / Sponsor Medium Rectangle (300x250 format) */}
-          <AdSlot
-            type="rectangle"
-            title="Sponsor & Solusi Payroll HR"
-            description="Slot promosi software manajemen absensi, slip gaji digital, atau konsultan ketenagakerjaan."
-          />
+          {/* Adsterra Banner 728x90 */}
+          <AdSlot type="leaderboard" />
         </div>
       </div>
     </div>

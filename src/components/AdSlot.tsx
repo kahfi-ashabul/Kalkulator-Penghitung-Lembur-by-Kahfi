@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Sparkles, ExternalLink, Megaphone } from 'lucide-react';
 
 export type AdSlotType = 'leaderboard' | 'rectangle' | 'sponsor_card';
@@ -13,8 +13,9 @@ interface AdSlotProps {
 }
 
 /**
- * Komponen Slot Iklan & Sponsor Modular
- * Dapat dihubungkan ke Google AdSense, Affiliate Banner, atau Sponsor Langsung.
+ * Komponen Slot Iklan Adsterra & Sponsor Modular
+ * - Leaderboard 728x90: Adsterra Unit (Placement ID: 32149172)
+ * - Social Bar diatur via index.html (Placement ID: 32149171)
  */
 export const AdSlot: React.FC<AdSlotProps> = ({
   type,
@@ -24,45 +25,85 @@ export const AdSlot: React.FC<AdSlotProps> = ({
   sponsorName = 'Ruang Iklan',
   className = '',
 }) => {
-  // 1. Leaderboard Banner (728x90 desktop, 320x50 mobile responsive)
+  const adContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (type === 'leaderboard' && adContainerRef.current) {
+      adContainerRef.current.innerHTML = '';
+
+      const iframe = document.createElement('iframe');
+      iframe.title = 'Adsterra 728x90 Banner';
+      iframe.width = '100%';
+      iframe.height = '90';
+      iframe.style.border = 'none';
+      iframe.style.overflow = 'hidden';
+      iframe.style.display = 'block';
+      iframe.style.margin = '0 auto';
+      iframe.style.maxWidth = '728px';
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>
+              body {
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background: transparent;
+                overflow: hidden;
+              }
+            </style>
+          </head>
+          <body>
+            <script type="text/javascript">
+              atOptions = {
+                'key' : '3d0a86e23e3cd7c0886854e772d156ae',
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+              };
+            </script>
+            <script type="text/javascript" src="https://bicea.org/22/3d0a86e23e3cd7c0886854e772d156ae"></script>
+          </body>
+        </html>
+      `;
+
+      adContainerRef.current.appendChild(iframe);
+
+      try {
+        const doc = iframe.contentWindow?.document || iframe.contentDocument;
+        if (doc) {
+          doc.open();
+          doc.write(htmlContent);
+          doc.close();
+        }
+      } catch (e) {
+        iframe.srcdoc = htmlContent;
+      }
+    }
+  }, [type]);
+
+  // 1. Leaderboard Banner (728x90 Adsterra Resmi: Placement ID 32149172)
   if (type === 'leaderboard') {
     return (
-      <div className={`w-full my-4 ${className}`}>
-        <div className="relative overflow-hidden rounded-lg bg-[#0F0F1A] border border-white/10 hover:border-[#00F0FF]/40 transition-all p-3 sm:py-3.5 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 group">
-          <div className="flex items-center gap-3 text-center sm:text-left">
-            <div className="p-2 rounded bg-[#00F0FF]/10 text-[#00F0FF] border border-[#00F0FF]/30 shrink-0">
-              <Megaphone className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center justify-center sm:justify-start gap-2">
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white/10 text-[#7A7A99] uppercase font-bold tracking-wider">
-                  {sponsorName}
-                </span>
-                <span className="text-xs sm:text-sm font-bold text-white group-hover:text-[#00F0FF] transition-colors">
-                  {title}
-                </span>
-              </div>
-              <p className="text-[11px] text-[#b9cacb] mt-0.5 line-clamp-1 font-sans">
-                {description}
-              </p>
-            </div>
-          </div>
-
-          <a
-            href={linkUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-3.5 py-1.5 rounded text-xs font-mono font-bold bg-[#1A1A2E] border border-[#00F0FF]/40 text-[#00F0FF] hover:bg-[#00F0FF] hover:text-[#0A0A12] transition-all flex items-center gap-1.5 shrink-0 shadow-[0_0_8px_rgba(0,240,255,0.2)]"
-          >
-            <span>Hubungi Sponsor</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
+      <div className={`w-full my-4 flex flex-col items-center justify-center overflow-hidden ${className}`}>
+        <div 
+          ref={adContainerRef} 
+          className="w-full max-w-[728px] min-h-[90px] flex items-center justify-center overflow-hidden rounded-lg bg-[#0F0F1A]/80 border border-white/10 shadow-md"
+        />
+        <div className="w-full max-w-[728px] flex justify-between items-center px-1 text-[9px] font-mono text-[#7A7A99] mt-1">
+          <span>Sponsored Ad</span>
+          <span>Placement 728x90</span>
         </div>
       </div>
     );
   }
 
-  // 2. Medium Rectangle (300x250 sidebar format)
+  // 2. Medium Rectangle (300x250 format)
   if (type === 'rectangle') {
     return (
       <div className={`p-4 rounded-lg bg-[#0F0F1A] border border-white/10 hover:border-[#FF2BD6]/40 transition-all text-center flex flex-col justify-between min-h-[220px] ${className}`}>
@@ -98,24 +139,22 @@ export const AdSlot: React.FC<AdSlotProps> = ({
 
   // 3. Sponsor Card (In-Feed Card)
   return (
-    <div className={`p-4 rounded-lg bg-[#12121F] border border-[#FFE600]/30 shadow-lg ${className}`}>
-      <div className="flex items-center justify-between text-[10px] font-mono text-[#FFE600] mb-2">
-        <span className="flex items-center gap-1">
-          <Sparkles className="w-3 h-3" /> RUANG SPONSOR & REKOMENDASI
+    <div className={`p-4 rounded-lg bg-gradient-to-br from-[#12121F] to-[#1A1A2E] border border-white/10 ${className}`}>
+      <div className="flex items-center justify-between text-xs font-mono mb-2">
+        <span className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] text-[#00F0FF] font-bold">
+          {sponsorName}
         </span>
-        <span className="text-[#7A7A99]">Info Kemitraan</span>
+        <span className="text-[10px] text-[#7A7A99]">Sponsorship</span>
       </div>
-      <h4 className="text-xs font-bold text-white mb-1">{title}</h4>
-      <p className="text-[11px] text-[#b9cacb] leading-relaxed mb-3">
-        {description}
-      </p>
+      <h4 className="text-sm font-bold text-white mb-1">{title}</h4>
+      <p className="text-xs text-[#b9cacb] mb-3">{description}</p>
       <a
         href={linkUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#00F0FF] hover:underline"
+        className="inline-flex items-center gap-1 text-xs font-mono text-[#00F0FF] hover:underline"
       >
-        <span>Pelajari Penawaran Iklan</span>
+        <span>Pelajari Selengkapnya</span>
         <ExternalLink className="w-3 h-3" />
       </a>
     </div>
