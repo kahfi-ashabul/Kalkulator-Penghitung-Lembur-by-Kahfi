@@ -750,9 +750,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
                       const regularPct = hasRegular ? (item.jamReguler / maxTotalHours) * 100 : 0;
                       const overtimePct = hasOvertime ? (item.jamLembur / maxTotalHours) * 100 : 0;
-                      const sickPct = isSick ? (8 / maxTotalHours) * 100 : 0;
-                      const izinPct = isIzin ? (8 / maxTotalHours) * 100 : 0;
-                      const cutiPct = isCuti ? (8 / maxTotalHours) * 100 : 0;
+                      // Balok Sakit/Izin/Cuti proporsional dan tidak lebih besar dari hari kerja normal
+                      const absentBarHours = settings.defaultSistem === '6_hari' ? 5 : 6;
+                      const sickPct = isSick ? (absentBarHours / maxTotalHours) * 100 : 0;
+                      const izinPct = isIzin ? (absentBarHours / maxTotalHours) * 100 : 0;
+                      const cutiPct = isCuti ? (absentBarHours / maxTotalHours) * 100 : 0;
 
                       return (
                         <div
@@ -833,37 +835,31 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                               </div>
                             )}
 
-                            {/* Sakit (Orange) */}
+                            {/* Sakit (Orange) - Polos Elegan Tanpa Teks Dobel */}
                             {isSick && (
                               <div
                                 style={{ height: `${sickPct}%` }}
-                                className="w-full rounded-t-sm bg-gradient-to-t from-[#D97706] to-[#F59E0B] border border-[#FBBF24] shadow-[0_0_10px_rgba(245,158,11,0.4)] flex items-center justify-center text-[9px] font-mono font-bold text-[#0A0A12]"
+                                className="w-full rounded-t-sm bg-gradient-to-t from-[#D97706] to-[#F59E0B] border border-[#FBBF24] shadow-[0_0_10px_rgba(245,158,11,0.4)] transition-all select-none"
                                 title="Sakit"
-                              >
-                                SKT
-                              </div>
+                              />
                             )}
 
-                            {/* Izin (Pink) */}
+                            {/* Izin (Pink) - Polos Elegan Tanpa Teks Dobel */}
                             {isIzin && (
                               <div
                                 style={{ height: `${izinPct}%` }}
-                                className="w-full rounded-t-sm bg-gradient-to-t from-[#BE185D] to-[#EC4899] border border-[#F472B6] shadow-[0_0_10px_rgba(236,72,153,0.45)] flex items-center justify-center text-[9px] font-mono font-bold text-white select-none"
+                                className="w-full rounded-t-sm bg-gradient-to-t from-[#BE185D] to-[#EC4899] border border-[#F472B6] shadow-[0_0_10px_rgba(236,72,153,0.45)] transition-all select-none"
                                 title="Izin"
-                              >
-                                IZN
-                              </div>
+                              />
                             )}
 
-                            {/* Cuti (Purple / Ungu) */}
+                            {/* Cuti (Purple / Ungu) - Polos Elegan Tanpa Teks Dobel */}
                             {isCuti && (
                               <div
                                 style={{ height: `${cutiPct}%` }}
-                                className="w-full rounded-t-sm bg-gradient-to-t from-[#7E22CE] to-[#A855F7] border border-[#C084FC] shadow-[0_0_10px_rgba(168,85,247,0.45)] flex items-center justify-center text-[9px] font-mono font-bold text-white select-none"
+                                className="w-full rounded-t-sm bg-gradient-to-t from-[#7E22CE] to-[#A855F7] border border-[#C084FC] shadow-[0_0_10px_rgba(168,85,247,0.45)] transition-all select-none"
                                 title="Cuti Resmi"
-                              >
-                                CUTI
-                              </div>
+                              />
                             )}
 
                             {/* Off Day Baseline */}

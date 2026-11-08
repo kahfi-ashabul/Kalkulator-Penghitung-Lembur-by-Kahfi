@@ -99,15 +99,6 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
     document.body.removeChild(link);
   };
 
-  const handleWhatsAppConfirm = () => {
-    const plan = SUBSCRIPTION_PLANS[selectedPlan];
-    const email = user?.email || 'Belum login';
-    const text = encodeURIComponent(
-      `Halo Admin Kei Project, saya ingin konfirmasi pembayaran ${plan.name} (${plan.priceFormatted}) untuk akun email: ${email}.`
-    );
-    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative w-full max-w-lg bg-[#12121F] border border-[#00F0FF]/40 rounded-2xl shadow-[0_0_50px_rgba(0,240,255,0.25)] text-[#E4E1ED] overflow-hidden max-h-[94vh] flex flex-col">
@@ -328,7 +319,7 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
               )}
 
               {/* Action Buttons */}
-              <div className="space-y-2 pt-1">
+              <div className="pt-1">
                 <button
                   type="button"
                   onClick={handlePayWithDoku}
@@ -341,15 +332,6 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
                       ? 'Menghubungkan DOKU...'
                       : `Bayar via DOKU (${SUBSCRIPTION_PLANS[selectedPlan].priceFormatted})`}
                   </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleWhatsAppConfirm}
-                  className="w-full py-2 px-3 rounded-lg bg-[#161626] border border-white/10 hover:border-[#25D366] text-[#25D366] text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Konfirmasi Pembayaran Manual via WhatsApp</span>
                 </button>
               </div>
 
@@ -388,28 +370,14 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
                 <div className="text-[10px] text-[#7A7A99]">A.N KEI STORE - GAME (Semua Bank & E-Wallet)</div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="pt-1">
                 <button
                   type="button"
                   onClick={handleDownloadQRIS}
-                  className="py-2.5 px-3 rounded-lg bg-[#161626] border border-[#EC4899]/40 hover:border-[#EC4899] text-[#EC4899] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                  className="w-full py-2.5 px-4 rounded-xl bg-[#161626] border border-[#EC4899]/50 hover:border-[#EC4899] text-[#EC4899] font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_0_12px_rgba(236,72,153,0.2)]"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Unduh QRIS</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    const text = encodeURIComponent(
-                      'Halo Kei Project, saya baru saja mengirim donasi / traktir kopi untuk Kalkulator Lembur. Terima kasih aplikasinya sangat membantu!'
-                    );
-                    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
-                  }}
-                  className="py-2.5 px-3 rounded-lg bg-[#25D366]/20 border border-[#25D366]/50 hover:bg-[#25D366]/30 text-[#25D366] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Kirim Pesan</span>
+                  <Download className="w-4 h-4" />
+                  <span>Unduh Gambar QRIS</span>
                 </button>
               </div>
             </div>

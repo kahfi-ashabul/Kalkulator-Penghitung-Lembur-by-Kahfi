@@ -76,10 +76,10 @@ export const Navigation: React.FC<NavigationProps> = ({
       {/* Top Deck Bar (Desktop & Tablet) */}
       <header className="sticky top-0 z-40 w-full bg-[#0A0A12]/90 backdrop-blur-xl border-b border-white/10 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
-          {/* Brand Logo & Title: Kei Pro & Kei Project */}
+          {/* Brand Logo & Title: Kei Pro */}
           <div
             onClick={() => onSelectScreen('dashboard')}
-            className="flex items-center gap-2 sm:gap-3 cursor-pointer group select-none min-w-0"
+            className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group select-none shrink-0"
           >
             <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#161626] border border-[#00F0FF]/40 shadow-[0_0_12px_rgba(0,240,255,0.3)] group-hover:border-[#00F0FF] transition-all shrink-0 p-1">
               <img
@@ -89,21 +89,13 @@ export const Navigation: React.FC<NavigationProps> = ({
               />
               <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#39FF14] animate-pulse" />
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <span className="font-black text-[#0F172A] dark:text-white text-sm sm:text-base md:text-lg tracking-tight font-heading drop-shadow-xs truncate">
-                  <span className="hidden sm:inline">Kalkulator </span>Lembur
-                </span>
-                <span className="text-[10px] sm:text-[11px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded bg-gradient-to-r from-[#00F0FF]/15 to-[#39FF14]/15 text-[#00F0FF] border border-[#00F0FF]/40 shadow-sm shrink-0">
-                  by Kei Project
-                </span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-[#334155] dark:text-[#b9cacb] font-mono font-semibold">
-                <span className="text-[#16A34A] dark:text-[#39FF14]">●</span>
-                <span className="text-[#0F172A] dark:text-white font-bold">PP 35/2021</span>
-                <span className="hidden md:inline text-[#64748B] dark:text-white/30">|</span>
-                <span className="hidden md:inline text-[#475569] dark:text-[#b9cacb]">Kei Pro v1.1</span>
-              </div>
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <span className="font-black text-[#0F172A] dark:text-white text-sm sm:text-base md:text-lg tracking-tight font-heading drop-shadow-xs whitespace-nowrap">
+                <span className="hidden sm:inline">Kalkulator </span>Lembur
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded bg-gradient-to-r from-[#00F0FF]/15 to-[#39FF14]/15 text-[#00F0FF] border border-[#00F0FF]/40 shadow-sm shrink-0 whitespace-nowrap">
+                Kei Pro
+              </span>
             </div>
           </div>
 
