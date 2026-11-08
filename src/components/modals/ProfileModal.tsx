@@ -27,7 +27,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [namaPerusahaan, setNamaPerusahaan] = useState(settings.namaPerusahaan || '');
   const [defaultGajiPokok, setDefaultGajiPokok] = useState(settings.defaultGajiPokok || 0);
   const [defaultTunjangan, setDefaultTunjangan] = useState(settings.defaultTunjangan || 0);
-  const [defaultUpahHarian, setDefaultUpahHarian] = useState(settings.defaultUpahHarian || 250000);
 
   // Sync state dari settings setiap kali modal dibuka
   useEffect(() => {
@@ -36,7 +35,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       setNamaPerusahaan(settings.namaPerusahaan || '');
       setDefaultGajiPokok(settings.defaultGajiPokok || 0);
       setDefaultTunjangan(settings.defaultTunjangan || 0);
-      setDefaultUpahHarian(settings.defaultUpahHarian || 250000);
     }
   }, [isOpen, settings]);
 
@@ -50,7 +48,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       namaPerusahaan: namaPerusahaan.trim() || 'PT Teknologi Nusantara Mandiri',
       defaultGajiPokok,
       defaultTunjangan,
-      defaultUpahHarian,
     });
     onClose();
   };
@@ -137,30 +134,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-[#b9cacb] mb-1 block">Tunjangan Tetap (Rp)</label>
-                <input
-                  type="number"
-                  step="100000"
-                  min="0"
-                  value={defaultTunjangan}
-                  onChange={(e) => setDefaultTunjangan(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white focus:outline-none focus:border-[#39FF14]"
-                />
-              </div>
-
-              <div>
-                <label className="text-[#b9cacb] mb-1 block">Upah Harian Baku (Rp)</label>
-                <input
-                  type="number"
-                  step="25000"
-                  min="0"
-                  value={defaultUpahHarian}
-                  onChange={(e) => setDefaultUpahHarian(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white focus:outline-none focus:border-[#00F0FF]"
-                />
-              </div>
+            <div>
+              <label className="text-[#b9cacb] mb-1 block">Tunjangan Tetap (Rp)</label>
+              <input
+                type="number"
+                step="100000"
+                min="0"
+                value={defaultTunjangan}
+                onChange={(e) => setDefaultTunjangan(parseFloat(e.target.value) || 0)}
+                className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white focus:outline-none focus:border-[#39FF14]"
+              />
+              <span className="text-[10px] text-[#7A7A99] mt-0.5 block">
+                Opsional, komponen tunjangan tetap bulanan (PP No. 35/2021).
+              </span>
             </div>
           </div>
 

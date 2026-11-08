@@ -45,10 +45,14 @@ export const AdSlot: React.FC<AdSlotProps> = ({
         <!DOCTYPE html>
         <html>
           <head>
+            <meta charset="utf-8" />
+            <base target="_blank" />
             <style>
-              body {
+              html, body {
                 margin: 0;
                 padding: 0;
+                width: 100%;
+                height: 100%;
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -72,18 +76,8 @@ export const AdSlot: React.FC<AdSlotProps> = ({
         </html>
       `;
 
+      iframe.srcdoc = htmlContent;
       adContainerRef.current.appendChild(iframe);
-
-      try {
-        const doc = iframe.contentWindow?.document || iframe.contentDocument;
-        if (doc) {
-          doc.open();
-          doc.write(htmlContent);
-          doc.close();
-        }
-      } catch (e) {
-        iframe.srcdoc = htmlContent;
-      }
     }
   }, [type]);
 
