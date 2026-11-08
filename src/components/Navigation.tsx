@@ -1,5 +1,19 @@
 import React from 'react';
-import { LayoutDashboard, Calculator, Banknote, History, Scale, Settings, Sparkles, Volume2, VolumeX, Sun, Moon, User, Heart, Crown, Cloud } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Calculator,
+  Banknote,
+  History,
+  Scale,
+  Settings,
+  Volume2,
+  VolumeX,
+  Sun,
+  Moon,
+  User,
+  Crown,
+  Cloud
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export type ScreenType = 'dashboard' | 'kalkulator' | 'gaji' | 'riwayat';
@@ -10,7 +24,7 @@ interface NavigationProps {
   onOpenLegal: () => void;
   onOpenSettings: () => void;
   onOpenProfile: () => void;
-  onOpenSupport: () => void;
+  onOpenSupport?: () => void;
   onOpenProModal: () => void;
   audioFeedback: boolean;
   onToggleAudio: () => void;
@@ -26,13 +40,11 @@ export const Navigation: React.FC<NavigationProps> = ({
   onOpenLegal,
   onOpenSettings,
   onOpenProfile,
-  onOpenSupport,
   onOpenProModal,
   audioFeedback,
   onToggleAudio,
   theme,
   onToggleTheme,
-  totalEntriesCount,
   namaKaryawan,
 }) => {
   const { user, isPro, countdown } = useAuth();
@@ -64,13 +76,17 @@ export const Navigation: React.FC<NavigationProps> = ({
       {/* Top Deck Bar (Desktop & Tablet) */}
       <header className="sticky top-0 z-40 w-full bg-[#0A0A12]/90 backdrop-blur-xl border-b border-white/10 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 transition-all">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
-          {/* Brand Logo & Title */}
+          {/* Brand Logo & Title: Kei Pro & Kei Project */}
           <div
             onClick={() => onSelectScreen('dashboard')}
             className="flex items-center gap-2 sm:gap-3 cursor-pointer group select-none min-w-0"
           >
-            <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded bg-[#161626] border border-[#00F0FF]/40 shadow-[0_0_12px_rgba(0,240,255,0.3)] group-hover:border-[#00F0FF] transition-all shrink-0">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#00F0FF] group-hover:scale-110 transition-transform" />
+            <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#161626] border border-[#00F0FF]/40 shadow-[0_0_12px_rgba(0,240,255,0.3)] group-hover:border-[#00F0FF] transition-all shrink-0 p-1">
+              <img
+                src="/assets/kei-icon.png"
+                alt="Kei Pro Logo"
+                className="w-full h-full object-contain group-hover:scale-110 transition-transform"
+              />
               <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#39FF14] animate-pulse" />
             </div>
             <div className="min-w-0">
@@ -78,15 +94,15 @@ export const Navigation: React.FC<NavigationProps> = ({
                 <span className="font-black text-[#0F172A] dark:text-white text-sm sm:text-base md:text-lg tracking-tight font-heading drop-shadow-xs truncate">
                   <span className="hidden sm:inline">Kalkulator </span>Lembur
                 </span>
-                <span className="text-[10px] sm:text-[11px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded bg-[#9333EA] dark:bg-[#7928CA] text-white border border-[#9333EA]/40 dark:border-purple-500/50 shadow-sm shrink-0">
-                  by Kahfi
+                <span className="text-[10px] sm:text-[11px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded bg-gradient-to-r from-[#00F0FF]/15 to-[#39FF14]/15 text-[#00F0FF] border border-[#00F0FF]/40 shadow-sm shrink-0">
+                  by Kei Project
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-[#334155] dark:text-[#b9cacb] font-mono font-semibold">
                 <span className="text-[#16A34A] dark:text-[#39FF14]">●</span>
                 <span className="text-[#0F172A] dark:text-white font-bold">PP 35/2021</span>
                 <span className="hidden md:inline text-[#64748B] dark:text-white/30">|</span>
-                <span className="hidden md:inline text-[#475569] dark:text-[#b9cacb]">Labor Engine v1.1</span>
+                <span className="hidden md:inline text-[#475569] dark:text-[#b9cacb]">Kei Pro v1.1</span>
               </div>
             </div>
           </div>
@@ -117,18 +133,8 @@ export const Navigation: React.FC<NavigationProps> = ({
             })}
           </nav>
 
-          {/* Action Utilities - Responsif, Tidak Terpotong di Mobile & Tablet */}
+          {/* Action Utilities - Rapi, Lega & Tidak Penuh */}
           <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            {/* Tombol Support / Traktir Kopi QRIS */}
-            <button
-              onClick={onOpenSupport}
-              className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg bg-[#EC4899]/15 border border-[#EC4899]/40 hover:border-[#EC4899] text-[#EC4899] hover:bg-[#EC4899]/25 text-xs font-mono font-bold transition-all shadow-[0_0_10px_rgba(236,72,153,0.2)] flex items-center gap-1.5 shrink-0"
-              title="Dukung pembuat aplikasi (QRIS Donasi)"
-            >
-              <Heart className="w-3.5 h-3.5 fill-[#EC4899] shrink-0" />
-              <span className="hidden xl:inline">Support</span>
-            </button>
-
             {/* Tombol Dasar Hukum */}
             <button
               onClick={onOpenLegal}
@@ -139,38 +145,40 @@ export const Navigation: React.FC<NavigationProps> = ({
               <span className="hidden xl:inline">Dasar Hukum</span>
             </button>
 
-            {/* Indikator Akun / Tombol Upgrade PRO & Sinkronisasi Cloud */}
+            {/* Indikator Akun / Tombol Upgrade PRO & Dukung Developer */}
             <button
               onClick={onOpenProModal}
-              className={`h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border text-xs font-mono font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+              className={`h-8 sm:h-9 px-2.5 sm:px-3 rounded-lg border text-xs font-mono font-bold transition-all flex items-center gap-1.5 shrink-0 ${
                 isPro
                   ? 'bg-[#39FF14]/15 border-[#39FF14]/50 hover:bg-[#39FF14]/25 text-[#39FF14] shadow-[0_0_12px_rgba(57,255,20,0.25)]'
                   : user
                   ? 'bg-[#161626] border-[#00F0FF]/40 hover:border-[#FFE600] text-white hover:text-[#FFE600] shadow-[0_0_8px_rgba(0,240,255,0.15)]'
-                  : 'bg-[#161626] border-[#FFE600]/30 hover:border-[#FFE600] text-[#FFE600] shadow-[0_0_8px_rgba(255,230,0,0.15)]'
+                  : 'bg-[#161626] border-[#00F0FF]/40 hover:border-[#39FF14] text-white shadow-[0_0_8px_rgba(0,240,255,0.15)]'
               }`}
               title={
                 isPro
-                  ? `Akun PRO Aktif: ${countdown.formatted} tersisa. Klik untuk detail.`
+                  ? `Akun PRO Aktif: ${countdown.formatted}. Klik untuk detail.`
                   : user
-                  ? 'Akun Gratis (Data di Browser). Klik untuk upgrade ke PRO.'
-                  : 'Data di Browser. Klik untuk Masuk atau Upgrade ke PRO.'
+                  ? 'Akun Gratis (Data di Browser). Klik untuk upgrade PRO / dukung.'
+                  : 'Data di Browser. Klik untuk Masuk, Upgrade PRO, atau Donasi.'
               }
             >
               {isPro ? (
                 <>
-                  <Crown className="w-3.5 h-3.5 fill-[#39FF14] shrink-0" />
-                  <span className="hidden sm:inline">PRO</span>
-                  <span className="text-[10px] text-white/90 font-normal hidden lg:inline">({countdown.days}h)</span>
+                  <Crown className="w-3.5 h-3.5 fill-[#39FF14] text-[#39FF14] shrink-0" />
+                  <span className="font-bold">PRO</span>
+                  <span className="text-[10px] text-white/90 font-normal hidden lg:inline">
+                    {countdown.isLifetime ? '(Founder)' : `(${countdown.days}h)`}
+                  </span>
                 </>
               ) : (
                 <>
-                  <Cloud className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
+                  <Crown className="w-3.5 h-3.5 text-[#FFE600] shrink-0" />
                   <span className="hidden sm:inline">
                     {user ? 'Akun Gratis' : 'Data di Browser'}
                   </span>
-                  <span className="px-1.5 py-0.5 rounded text-[9px] bg-gradient-to-r from-[#FFE600] to-[#FF2BD6] text-[#0A0A12] font-black uppercase tracking-wider shrink-0">
-                    PRO 10K
+                  <span className="px-1.5 py-0.5 rounded text-[9px] bg-gradient-to-r from-[#00F0FF] to-[#39FF14] text-[#0A0A12] font-black uppercase tracking-wider shrink-0 shadow-sm">
+                    PRO 5K
                   </span>
                 </>
               )}

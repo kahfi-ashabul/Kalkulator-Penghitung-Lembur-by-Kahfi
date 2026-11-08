@@ -33,9 +33,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     count: 0,
   });
 
+  // Deteksi akun Founder / Owner aplikasi untuk akses PRO permanen
+  const isFounder = user?.email?.toLowerCase() === '373keiii@gmail.com';
+
   // Hitung sisa masa aktif langganan Pro secara reaktif
-  const countdown: SubscriptionCountdown = calculateRemainingSubscription(profile?.expires_at);
-  const isPro: boolean = Boolean(profile?.is_pro && !countdown.isExpired);
+  const countdown: SubscriptionCountdown = isFounder
+    ? {
+        isExpired: false,
+        isLifetime: true,
+        days: 99999,
+        hours: 23,
+        minutes: 59,
+        formatted: 'Aktif Selamanya (Founder)',
+      }
+    : calculateRemainingSubscription(profile?.expires_at);
+
+  const isPro: boolean = isFounder || Boolean(profile?.is_pro && !countdown.isExpired);
 
   const loadProfile = useCallback(async (userId: string) => {
     const prof = await fetchUserProfile(userId);

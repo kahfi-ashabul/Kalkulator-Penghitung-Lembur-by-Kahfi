@@ -23,18 +23,18 @@ export const SUBSCRIPTION_PLANS: Record<SubscriptionPlan, PlanDetail> = {
   monthly: {
     id: 'monthly',
     name: 'Paket Bulanan',
-    price: 10000,
-    priceFormatted: 'Rp 10.000',
+    price: 5000,
+    priceFormatted: 'Rp 5.000',
     periodDays: 30,
-    description: 'Akses Pro selama 30 hari',
+    description: 'Akses Pro selama 30 hari (~Rp 160/hari)',
   },
   yearly: {
     id: 'yearly',
     name: 'Paket Tahunan',
-    price: 100000,
-    priceFormatted: 'Rp 100.000',
+    price: 45000,
+    priceFormatted: 'Rp 45.000',
     periodDays: 365,
-    description: 'Akses Pro 365 hari penuh (Hemat 2 bulan)',
+    description: 'Akses Pro 365 hari penuh (Diskon Hemat)',
     badge: 'PALING HEMAT',
   },
 };
@@ -79,6 +79,18 @@ export function calculateRemainingSubscription(expiresAt?: string | null): Subsc
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+  // Jika masa aktif lebih dari 3 tahun, anggap sebagai akun Lifetime / Founder
+  if (days > 1095) {
+    return {
+      isExpired: false,
+      isLifetime: true,
+      days,
+      hours,
+      minutes,
+      formatted: 'Aktif Selamanya (Founder)',
+    };
+  }
 
   let formatted = '';
   if (days > 0) {

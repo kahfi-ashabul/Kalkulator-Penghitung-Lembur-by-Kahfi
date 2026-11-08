@@ -14,7 +14,11 @@ import {
   QrCode,
   LogOut,
   RefreshCw,
-  AlertCircle
+  AlertCircle,
+  Heart,
+  Coffee,
+  Download,
+  Send
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SubscriptionPlan, SUBSCRIPTION_PLANS } from '../../types/auth';
@@ -27,7 +31,6 @@ interface ProModalProps {
 export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
   const {
     user,
-    profile,
     isPro,
     countdown,
     syncStatus,
@@ -37,13 +40,14 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
     triggerCloudSync,
   } = useAuth();
 
+  const [activeTab, setActiveTab] = useState<'pro' | 'support'>('pro');
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan>('monthly');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  // Handler Pembayaran DOKU (Simulasi & Integrasi Checkout)
+  // Handler Pembayaran DOKU (Simulasi & Integrasi Gateway)
   const handlePayWithDoku = async () => {
     if (!user) {
       await loginWithGoogle();
@@ -57,21 +61,34 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
       const plan = SUBSCRIPTION_PLANS[selectedPlan];
       
       // Simulasi panggilan endpoint DOKU Payment Gateway
-      // Pada lingkungan produksi, lakukan POST request ke backend / Supabase Edge Function Anda
-      // yang memanggil API https://api.doku.com/checkout/v1/payment
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       setPaymentMessage(
-        `Memproses pembayaran ${plan.name} (${plan.priceFormatted}) via DOKU Gateway... Siapkan QRIS atau nomor Virtual Account.`
+        `Memproses pembayaran ${plan.name} (${plan.priceFormatted}) via DOKU Gateway... Siapkan QRIS atau Virtual Account.`
       );
-
-      // Contoh redirect ke Invoice URL DOKU (atau pemicu Doku Checkout Pop-up JS)
-      // window.location.href = `https://checkout.doku.com/payment/...`;
     } catch (err: any) {
       setPaymentMessage('Gagal menghubungi gateway DOKU: ' + (err?.message || 'Koneksi error'));
     } finally {
       setIsProcessingPayment(false);
     }
+  };
+
+  const handleDownloadQRIS = () => {
+    const link = document.createElement('a');
+    link.href = '/qris.jpg';
+    link.download = 'qris-support-kei-project.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleWhatsAppConfirm = () => {
+    const plan = SUBSCRIPTION_PLANS[selectedPlan];
+    const email = user?.email || 'Belum login';
+    const text = encodeURIComponent(
+      `Halo Admin Kei Project, saya ingin konfirmasi pembayaran ${plan.name} (${plan.priceFormatted}) untuk akun email: ${email}.`
+    );
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
 
   return (
@@ -80,14 +97,14 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
         {/* Modal Header */}
         <div className="p-4 sm:p-5 border-b border-white/10 bg-[#0A0A12] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FFE600]/20 to-[#FF2BD6]/20 border border-[#FFE600]/40 flex items-center justify-center text-[#FFE600] shadow-[0_0_15px_rgba(255,230,0,0.3)]">
-              <Crown className="w-5 h-5 fill-[#FFE600]" />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00F0FF]/20 to-[#39FF14]/20 border border-[#00F0FF]/40 flex items-center justify-center text-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+              <Crown className="w-5 h-5 fill-[#39FF14] text-[#39FF14]" />
             </div>
             <div>
               <h3 className="font-bold text-white text-base sm:text-lg font-heading flex items-center gap-2">
-                {isPro ? 'Keanggotaan Pro Aktif' : 'Upgrade ke Akun Pro'}
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-[#FFE600] to-[#FF2BD6] text-[#0A0A12]">
-                  PRO TIER
+                {isPro ? 'Keanggotaan PRO Aktif' : 'Upgrade ke Akun PRO'}
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-gradient-to-r from-[#00F0FF] to-[#39FF14] text-[#0A0A12]">
+                  KEI PRO
                 </span>
               </h3>
               <p className="text-xs text-[#b9cacb] font-mono">
@@ -104,248 +121,280 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
+        {/* Tab Switcher: PRO vs Dukungan Sukarela */}
+        <div className="flex border-b border-white/10 bg-[#0D0D18] px-4 pt-2">
+          <button
+            onClick={() => setActiveTab('pro')}
+            className={`flex items-center gap-2 py-2.5 px-4 text-xs font-mono font-bold border-b-2 transition-all ${
+              activeTab === 'pro'
+                ? 'border-[#00F0FF] text-[#00F0FF] bg-[#161626]'
+                : 'border-transparent text-[#7A7A99] hover:text-white'
+            }`}
+          >
+            <Crown className="w-4 h-4" />
+            <span>Fitur PRO (5K)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('support')}
+            className={`flex items-center gap-2 py-2.5 px-4 text-xs font-mono font-bold border-b-2 transition-all ${
+              activeTab === 'support'
+                ? 'border-[#EC4899] text-[#EC4899] bg-[#161626]'
+                : 'border-transparent text-[#7A7A99] hover:text-white'
+            }`}
+          >
+            <Heart className="w-4 h-4 fill-[#EC4899]" />
+            <span>Traktir Kopi / QRIS</span>
+          </button>
+        </div>
+
         {/* Modal Content Body */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-5 text-xs font-mono">
-          {/* User Status Card */}
-          <div className="p-3.5 rounded-xl bg-[#0A0A12] border border-white/10 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[#7A7A99]">Status Akun:</span>
-              {user ? (
-                <span className="text-white font-bold truncate max-w-[200px]">{user.email}</span>
-              ) : (
-                <span className="text-[#FFE600] font-bold">Tamu (Data di Browser Saja)</span>
-              )}
-            </div>
+          {/* TAB 1: PRO SUBSCRIPTION */}
+          {activeTab === 'pro' && (
+            <>
+              {/* User Status Card */}
+              <div className="p-3.5 rounded-xl bg-[#0A0A12] border border-white/10 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-[#7A7A99]">Status Akun:</span>
+                  {user ? (
+                    <span className="text-white font-bold truncate max-w-[200px]">{user.email}</span>
+                  ) : (
+                    <span className="text-[#FFE600] font-bold">Tamu (Data di Browser Saja)</span>
+                  )}
+                </div>
 
-            {user && (
-              <div className="flex items-center justify-between text-xs pt-1 border-t border-white/5">
-                <span className="text-[#7A7A99]">Masa Aktif Pro:</span>
-                {isPro ? (
-                  <span className="text-[#39FF14] font-bold flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" /> {countdown.formatted} tersisa
-                  </span>
-                ) : (
-                  <span className="text-[#7A7A99]">Akun Standar Gratis</span>
+                {user && (
+                  <div className="flex items-center justify-between text-xs pt-1 border-t border-white/5">
+                    <span className="text-[#7A7A99]">Masa Aktif Pro:</span>
+                    {isPro ? (
+                      <span className="text-[#39FF14] font-bold flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" /> {countdown.formatted}
+                      </span>
+                    ) : (
+                      <span className="text-[#EC4899]">Belum Berlangganan (Akun Gratis)</span>
+                    )}
+                  </div>
+                )}
+
+                {/* Cloud Sync Status */}
+                {isPro && (
+                  <div className="flex items-center justify-between text-[11px] pt-1 text-[#00F0FF]">
+                    <span className="flex items-center gap-1">
+                      <Cloud className="w-3 h-3" /> Sinkronisasi Cloud:
+                    </span>
+                    <button
+                      onClick={() => triggerCloudSync()}
+                      disabled={syncStatus.inProgress}
+                      className="hover:underline flex items-center gap-1 text-[#39FF14]"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${syncStatus.inProgress ? 'animate-spin' : ''}`} />
+                      {syncStatus.inProgress ? 'Menyinkronkan...' : 'Sinkronkan Sekarang'}
+                    </button>
+                  </div>
                 )}
               </div>
-            )}
 
-            {user && isPro && (
-              <div className="flex items-center justify-between text-[11px] pt-1 text-[#00F0FF]">
-                <span>Cloud Sync Terakhir:</span>
-                <span className="font-mono">
-                  {syncStatus.lastSynced ? new Date(syncStatus.lastSynced).toLocaleTimeString('id-ID') : 'Belum sync'}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Prompt Login jika Belum Masuk */}
-          {!user && (
-            <div className="p-4 rounded-xl bg-[#1A1A2E] border border-[#00F0FF]/30 space-y-3 text-center">
-              <div className="w-10 h-10 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/40 text-[#00F0FF] flex items-center justify-center mx-auto">
-                <Cloud className="w-5 h-5" />
-              </div>
-              <div>
-                <h4 className="font-bold text-white text-sm">Masuk dengan Akun Google</h4>
-                <p className="text-[11px] text-[#b9cacb] mt-0.5 font-sans">
-                  Hubungkan akun untuk mengaktifkan sinkronisasi otomatis dan aktivasi paket Pro.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={loginWithGoogle}
-                className="w-full py-2.5 px-4 rounded-lg bg-white hover:bg-slate-100 text-slate-900 font-bold font-sans text-xs flex items-center justify-center gap-2 transition-all shadow-md"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                  />
-                </svg>
-                <span>Masuk Sekarang dengan Google</span>
-              </button>
-            </div>
-          )}
-
-          {/* Keuntungan Fitur PRO */}
-          <div className="space-y-2.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#b9cacb] block">
-              Fitur Eksklusif Member PRO:
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-sans">
-              <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
-                <Cloud className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-white block font-mono">Sinkronisasi Cloud</strong>
-                  <span className="text-[#b9cacb]">Data tersimpan otomatis di database Supabase PostgreSQL aman.</span>
-                </div>
-              </div>
-
-              <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
-                <Smartphone className="w-4 h-4 text-[#39FF14] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-white block font-mono">Akses Multi-Device</strong>
-                  <span className="text-[#b9cacb]">Akses riwayat lembur dari HP, tablet, maupun laptop kantor.</span>
-                </div>
-              </div>
-
-              <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
-                <EyeOff className="w-4 h-4 text-[#FF2BD6] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-white block font-mono">Bebas Iklan 100%</strong>
-                  <span className="text-[#b9cacb]">Tanpa popunder, banner, atau iklan social bar apapun.</span>
-                </div>
-              </div>
-
-              <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#FFE600] shrink-0 mt-0.5" />
-                <div>
-                  <strong className="text-white block font-mono">Anti Kehilangan Data</strong>
-                  <span className="text-[#b9cacb]">Cache browser terhapus? Data tetap aman tersinkron di akun Anda.</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Pilihan Paket Langganan */}
-          <div className="space-y-3 pt-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-[#b9cacb] block">
-              Pilih Paket Langganan:
-            </span>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Paket Bulanan */}
-              <div
-                onClick={() => setSelectedPlan('monthly')}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all relative ${
-                  selectedPlan === 'monthly'
-                    ? 'bg-[#1A1A2E] border-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.25)]'
-                    : 'bg-[#0A0A12] border-white/10 hover:border-white/25'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-white text-sm">Paket Bulanan</span>
-                  <div
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                      selectedPlan === 'monthly'
-                        ? 'border-[#00F0FF] bg-[#00F0FF] text-[#0A0A12]'
-                        : 'border-white/20'
-                    }`}
+              {/* Login CTA jika belum login */}
+              {!user && (
+                <div className="p-3.5 rounded-xl bg-[#161626] border border-[#00F0FF]/30 space-y-2.5">
+                  <p className="text-[#b9cacb] leading-relaxed">
+                    Masuk dengan akun Google untuk mengikat riwayat lembur ke cloud dan menikmati akses dari HP maupun laptop.
+                  </p>
+                  <button
+                    onClick={loginWithGoogle}
+                    className="w-full py-2.5 px-4 rounded-lg bg-white hover:bg-slate-100 text-[#0F172A] font-bold flex items-center justify-center gap-2.5 transition-all shadow-md"
                   >
-                    {selectedPlan === 'monthly' && <Check className="w-3 h-3 stroke-[3]" />}
-                  </div>
+                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                      <path
+                        fill="#4285F4"
+                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                      />
+                    </svg>
+                    <span>Masuk dengan Google</span>
+                  </button>
                 </div>
-                <div className="mt-2 text-xl font-extrabold text-[#00F0FF] font-mono">
-                  Rp 10.000 <span className="text-xs text-[#b9cacb] font-normal">/ 30 hari</span>
-                </div>
-                <p className="mt-1 text-[11px] text-[#7A7A99] font-sans">
-                  Sangat terjangkau untuk kebutuhan bulanan karyawan.
-                </p>
-              </div>
-
-              {/* Paket Tahunan */}
-              <div
-                onClick={() => setSelectedPlan('yearly')}
-                className={`p-3.5 rounded-xl border cursor-pointer transition-all relative overflow-hidden ${
-                  selectedPlan === 'yearly'
-                    ? 'bg-[#1A1A2E] border-[#FFE600] shadow-[0_0_15px_rgba(255,230,0,0.25)]'
-                    : 'bg-[#0A0A12] border-white/10 hover:border-white/25'
-                }`}
-              >
-                <div className="absolute top-0 right-0 bg-gradient-to-l from-[#FFE600] to-[#FF2BD6] text-[#0A0A12] text-[9px] font-bold px-2 py-0.5 rounded-bl">
-                  HEMAT 2 BULAN
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-white text-sm">Paket Tahunan</span>
-                  <div
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                      selectedPlan === 'yearly'
-                        ? 'border-[#FFE600] bg-[#FFE600] text-[#0A0A12]'
-                        : 'border-white/20'
-                    }`}
-                  >
-                    {selectedPlan === 'yearly' && <Check className="w-3 h-3 stroke-[3]" />}
-                  </div>
-                </div>
-                <div className="mt-2 text-xl font-extrabold text-[#FFE600] font-mono">
-                  Rp 100.000 <span className="text-xs text-[#b9cacb] font-normal">/ 365 hari</span>
-                </div>
-                <p className="mt-1 text-[11px] text-[#7A7A99] font-sans">
-                  Hanya Rp 8.300/bln, aktif 1 tahun penuh tanpa repot.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Notifikasi feedback pembayaran */}
-          {paymentMessage && (
-            <div className="p-3 rounded-lg bg-[#00F0FF]/15 border border-[#00F0FF]/40 text-[#00F0FF] text-xs font-mono animate-in fade-in">
-              {paymentMessage}
-            </div>
-          )}
-
-          {/* Tombol Aksi Pembayaran DOKU */}
-          <div className="space-y-2 pt-1">
-            <button
-              type="button"
-              disabled={isProcessingPayment}
-              onClick={handlePayWithDoku}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#00F0FF] via-[#0082FB] to-[#FF2BD6] text-[#0A0A12] font-black text-sm font-mono hover:opacity-95 transition-all shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <QrCode className="w-4 h-4 text-[#0A0A12]" />
-              <span>
-                {isProcessingPayment
-                  ? 'Menghubungkan ke DOKU...'
-                  : user
-                  ? `Bayar via DOKU (QRIS / VA) • ${SUBSCRIPTION_PLANS[selectedPlan].priceFormatted}`
-                  : 'Masuk dengan Google Dahulu'}
-              </span>
-            </button>
-
-            <div className="flex items-center justify-between text-[10px] text-[#7A7A99]">
-              <span>Mendukung: QRIS (BCA, Gopay, OVO, Dana) & Virtual Account Bank</span>
-              <span className="flex items-center gap-1 text-[#39FF14]">
-                <ShieldCheck className="w-3 h-3" /> Transaksi Terenkripsi
-              </span>
-            </div>
-          </div>
-
-          {/* Tombol Sync & Logout Jika User Login */}
-          {user && (
-            <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
-              {isPro && (
-                <button
-                  type="button"
-                  onClick={() => triggerCloudSync()}
-                  disabled={syncStatus.inProgress}
-                  className="text-[#00F0FF] hover:underline flex items-center gap-1.5"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${syncStatus.inProgress ? 'animate-spin' : ''}`} />
-                  <span>Sinkronkan Sekarang</span>
-                </button>
               )}
 
-              <button
-                type="button"
-                onClick={logout}
-                className="text-[#ffb4ab] hover:underline flex items-center gap-1 ml-auto"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span>Keluar (Logout)</span>
-              </button>
+              {/* Fitur Unggulan Pro */}
+              <div className="space-y-2">
+                <span className="text-[#7A7A99] font-bold uppercase tracking-wider text-[10px]">
+                  Benefit Spesial Member PRO:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                  <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
+                    <Cloud className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-white">Sinkronisasi Cloud</div>
+                      <div className="text-[#7A7A99]">Data lembur otomatis aman tersimpan</div>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
+                    <Smartphone className="w-4 h-4 text-[#39FF14] shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-white">Akses Multi-Device</div>
+                      <div className="text-[#7A7A99]">Buka dari HP, tablet, maupun laptop</div>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
+                    <EyeOff className="w-4 h-4 text-[#FFE600] shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-white">100% Bebas Iklan</div>
+                      <div className="text-[#7A7A99]">Tanpa banner atau pop-up sama sekali</div>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
+                    <ShieldCheck className="w-4 h-4 text-[#FF2BD6] shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-white">Labor Engine v1.1</div>
+                      <div className="text-[#7A7A99]">Formula PP 35/2021 tervalidasi</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pilihan Paket Langganan */}
+              <div className="space-y-2.5">
+                <span className="text-[#7A7A99] font-bold uppercase tracking-wider text-[10px]">
+                  Pilih Paket Langganan:
+                </span>
+                <div className="grid grid-cols-2 gap-3">
+                  {(Object.keys(SUBSCRIPTION_PLANS) as SubscriptionPlan[]).map((planKey) => {
+                    const plan = SUBSCRIPTION_PLANS[planKey];
+                    const isSelected = selectedPlan === planKey;
+                    return (
+                      <div
+                        key={plan.id}
+                        onClick={() => setSelectedPlan(planKey)}
+                        className={`relative p-3.5 rounded-xl border cursor-pointer transition-all select-none ${
+                          isSelected
+                            ? 'bg-[#161626] border-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.25)]'
+                            : 'bg-[#0A0A12] border-white/10 hover:border-white/30'
+                        }`}
+                      >
+                        {plan.badge && (
+                          <span className="absolute -top-2 right-2 px-1.5 py-0.5 rounded text-[8px] bg-gradient-to-r from-[#FFE600] to-[#FF2BD6] text-[#0A0A12] font-black uppercase">
+                            {plan.badge}
+                          </span>
+                        )}
+                        <div className="text-white font-bold">{plan.name}</div>
+                        <div className="text-base font-black text-[#00F0FF] my-1">
+                          {plan.priceFormatted}
+                        </div>
+                        <div className="text-[10px] text-[#7A7A99]">{plan.description}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Payment Feedback */}
+              {paymentMessage && (
+                <div className="p-3 rounded-lg bg-[#00F0FF]/15 border border-[#00F0FF]/40 text-[#00F0FF] text-xs">
+                  {paymentMessage}
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="space-y-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handlePayWithDoku}
+                  disabled={isProcessingPayment}
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#00F0FF] to-[#39FF14] text-[#0A0A12] font-black text-sm hover:opacity-95 transition-all shadow-[0_0_20px_rgba(0,240,255,0.4)] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>
+                    {isProcessingPayment
+                      ? 'Menghubungkan DOKU...'
+                      : `Bayar via DOKU (${SUBSCRIPTION_PLANS[selectedPlan].priceFormatted})`}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleWhatsAppConfirm}
+                  className="w-full py-2 px-3 rounded-lg bg-[#161626] border border-white/10 hover:border-[#25D366] text-[#25D366] text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Konfirmasi Pembayaran Manual via WhatsApp</span>
+                </button>
+              </div>
+
+              {/* User Logged in - Sign Out link */}
+              {user && (
+                <div className="pt-2 text-center border-t border-white/10">
+                  <button
+                    onClick={logout}
+                    className="text-[#7A7A99] hover:text-[#EC4899] text-xs transition-colors inline-flex items-center gap-1"
+                  >
+                    <LogOut className="w-3 h-3" /> Keluar dari Akun ({user.email})
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* TAB 2: SUPPORT & DONASI SUKARELA */}
+          {activeTab === 'support' && (
+            <div className="space-y-4 text-center">
+              <p className="text-[11px] text-[#b9cacb] leading-relaxed">
+                Terima kasih telah menggunakan <strong>Kalkulator Lembur by Kei Project</strong>! Traktiran kopi atau donasi seikhlasnya sangat berarti untuk operasional server dan pengembangan fitur selanjutnya.
+              </p>
+
+              {/* QRIS Container */}
+              <div className="bg-white p-3 rounded-xl shadow-xl border-2 border-[#EC4899]/30 inline-block mx-auto max-w-[240px]">
+                <img
+                  src="/qris.jpg"
+                  alt="QRIS Kei Project"
+                  className="w-full h-auto rounded-lg object-contain select-none"
+                />
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-[#161626] border border-white/10 text-[11px] text-white">
+                <span className="text-[#EC4899] font-bold">NMID: ID1024346850493</span>
+                <div className="text-[10px] text-[#7A7A99]">A.N KEI STORE - GAME (Semua Bank & E-Wallet)</div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleDownloadQRIS}
+                  className="py-2.5 px-3 rounded-lg bg-[#161626] border border-[#EC4899]/40 hover:border-[#EC4899] text-[#EC4899] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Unduh QRIS</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = encodeURIComponent(
+                      'Halo Kei Project, saya baru saja mengirim donasi / traktir kopi untuk Kalkulator Lembur. Terima kasih aplikasinya sangat membantu!'
+                    );
+                    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
+                  }}
+                  className="py-2.5 px-3 rounded-lg bg-[#25D366]/20 border border-[#25D366]/50 hover:bg-[#25D366]/30 text-[#25D366] font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Kirim Pesan</span>
+                </button>
+              </div>
             </div>
           )}
         </div>

@@ -15,11 +15,14 @@ import {
   Sparkles,
   ArrowRight,
   CheckCircle2,
-  Briefcase
+  Briefcase,
+  FileImage,
+  Send
 } from 'lucide-react';
 import { OvertimeEntry, UserSettings, Deductions, AttendanceRecord } from '../../types/overtime';
 import { formatRupiah, parseRupiah, getCutoffDateRange } from '../../utils/calculations';
 import { playCyberClick, playCyberSuccess } from '../../utils/audio';
+import { downloadSalarySlipPNG } from '../../utils/salarySlipGenerator';
 
 interface SalaryCalculatorScreenProps {
   entries: OvertimeEntry[];
@@ -234,6 +237,43 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
     const waUrl = `https://api.whatsapp.com/send?text=${encoded}`;
     window.open(waUrl, '_blank');
     setShareToast('Membuka WhatsApp untuk membagikan slip...');
+    setTimeout(() => setShareToast(null), 3000);
+  };
+
+  const handleDirectWhatsApp = () => {
+    if (settings.audioFeedback) playCyberClick();
+    const slip = generateSlipText();
+    const encoded = encodeURIComponent(slip);
+    window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+    setShareToast('Membuka WhatsApp untuk mengirim slip...');
+    setTimeout(() => setShareToast(null), 3000);
+  };
+
+  const handleDownloadSalarySlip = () => {
+    if (settings.audioFeedback) playCyberSuccess();
+    downloadSalarySlipPNG({
+      namaKaryawan: settings.namaKaryawan || 'Karyawan',
+      namaPerusahaan: settings.namaPerusahaan || 'Kei Project',
+      periode: activeDateRange.label,
+      tanggalCetak: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+      gajiPokok: mode === 'bulanan' ? gajiPokok : pendapatanHarianTotal,
+      tunjanganTetap: mode === 'bulanan' ? tunjanganTetap : 0,
+      totalUangLembur: activeOvertimeAmount,
+      totalJamLembur: 0,
+      totalTunjanganKehadiran: 0,
+      hariMasuk: jumlahHariMasuk,
+      totalTambahanLain: 0,
+      totalPotongan,
+      potonganDetail: [
+        { nama: 'BPJS Ketenagakerjaan', nominal: deductions.bpjsKetenagakerjaan || 0 },
+        { nama: 'BPJS Kesehatan (1%)', nominal: deductions.bpjsKesehatan || 0 },
+        { nama: 'PPh 21 / Pajak', nominal: deductions.pph21 || 0 },
+        { nama: 'Kasbon / Pinjaman', nominal: deductions.kasbon || 0 },
+        { nama: 'Potongan Lainnya', nominal: deductions.lainnya || 0 },
+      ].filter((p) => p.nominal > 0),
+      takeHomePay: finalTakeHomePay,
+    });
+    setShareToast('Gambar Slip Gaji PNG (2x Retina) berhasil diunduh!');
     setTimeout(() => setShareToast(null), 3000);
   };
 
@@ -881,21 +921,39 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+          {/* Action buttons - 2x2 Grid dengan Ekspor Gambar PNG & WhatsApp */}
+          <div className="grid grid-cols-2 gap-2.5 font-mono text-xs">
+            <button
+              onClick={handleDownloadSalarySlip}
+              className="py-2.5 px-3 rounded bg-gradient-to-r from-[#FF2BD6] to-[#9333EA] text-white font-bold hover:opacity-95 transition-all shadow-[0_0_14px_rgba(255,43,214,0.35)] flex items-center justify-center gap-1.5"
+              title="Unduh Slip Gaji sebagai Gambar PNG beresolusi tinggi (2x Retina)"
+            >
+              <FileImage className="w-4 h-4" />
+              <span>Slip PNG</span>
+            </button>
+
+            <button
+              onClick={handleDirectWhatsApp}
+              className="py-2.5 px-3 rounded bg-[#25D366]/15 border border-[#25D366]/40 hover:bg-[#25D366]/25 text-[#25D366] font-bold transition-all shadow-[0_0_10px_rgba(37,211,102,0.2)] flex items-center justify-center gap-1.5"
+              title="Kirim rincian slip gaji langsung ke nomor WhatsApp"
+            >
+              <Send className="w-4 h-4" />
+              <span>WhatsApp</span>
+            </button>
+
             <button
               onClick={handleCopySummary}
               className="py-2.5 px-3 rounded bg-[#1A1A2E] border border-white/10 hover:border-[#00F0FF] text-[#00F0FF] transition-all flex items-center justify-center gap-1.5 shadow-sm"
               title="Salin rincian slip gaji berformat rapi untuk WhatsApp / Dokumen"
             >
               {copied ? <Check className="w-4 h-4 text-[#39FF14]" /> : <Copy className="w-4 h-4" />}
-              <span>{copied ? 'Tersalin ke Clipboard!' : 'Salin Slip Gaji'}</span>
+              <span>{copied ? 'Tersalin!' : 'Salin Teks'}</span>
             </button>
 
             <button
               onClick={handleShareSlip}
-              className="py-2.5 px-3 rounded bg-gradient-to-r from-[#00F0FF] to-[#0082FB] text-[#0A0A12] font-bold hover:opacity-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-1.5"
-              title="Bagikan slip via WhatsApp / Aplikasi Lainnya"
+              className="py-2.5 px-3 rounded bg-[#161626] border border-white/10 hover:border-[#00F0FF]/40 text-[#b9cacb] hover:text-white transition-all shadow-sm flex items-center justify-center gap-1.5"
+              title="Bagikan slip via menu bagikan sistem HP / Laptop"
             >
               <Share2 className="w-4 h-4" />
               <span>Bagikan Slip</span>

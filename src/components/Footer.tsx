@@ -12,14 +12,14 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <div className="relative flex items-center justify-center w-7 h-7 rounded bg-[#161626] border border-[#00F0FF]/40 shadow-xs">
-                <Sparkles className="w-4 h-4 text-[#00F0FF]" />
+              <div className="relative flex items-center justify-center w-7 h-7 rounded-lg bg-[#161626] border border-[#00F0FF]/40 shadow-xs p-1">
+                <img src="/assets/kei-icon.png" alt="Kei Pro" className="w-full h-full object-contain" />
               </div>
               <span className="font-black text-[#0F172A] dark:text-white text-base tracking-tight font-heading">
-                Kalkulator Penghitung Lembur
+                Kalkulator Lembur
               </span>
-              <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-[#9333EA] dark:bg-[#7928CA] text-white border border-[#9333EA]/40 dark:border-purple-500/50 shadow-sm shrink-0">
-                by Kahfi
+              <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-gradient-to-r from-[#00F0FF]/15 to-[#39FF14]/15 text-[#00F0FF] border border-[#00F0FF]/40 shadow-sm shrink-0">
+                by Kei Project
               </span>
             </div>
             <p className="text-[11px] text-[#b9cacb] mt-1 font-sans max-w-xl">
