@@ -1,5 +1,6 @@
 import React from 'react';
-import { LayoutDashboard, Calculator, Banknote, History, Scale, Settings, Sparkles, Volume2, VolumeX, Sun, Moon, User, Heart } from 'lucide-react';
+import { LayoutDashboard, Calculator, Banknote, History, Scale, Settings, Sparkles, Volume2, VolumeX, Sun, Moon, User, Heart, Crown, Cloud } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export type ScreenType = 'dashboard' | 'kalkulator' | 'gaji' | 'riwayat';
 
@@ -10,6 +11,7 @@ interface NavigationProps {
   onOpenSettings: () => void;
   onOpenProfile: () => void;
   onOpenSupport: () => void;
+  onOpenProModal: () => void;
   audioFeedback: boolean;
   onToggleAudio: () => void;
   theme: 'dark' | 'light';
@@ -25,6 +27,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   onOpenSettings,
   onOpenProfile,
   onOpenSupport,
+  onOpenProModal,
   audioFeedback,
   onToggleAudio,
   theme,
@@ -32,6 +35,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   totalEntriesCount,
   namaKaryawan,
 }) => {
+  const { user, isPro, countdown } = useAuth();
   const navItems: Array<{ id: ScreenType; label: string; icon: React.ReactNode }> = [
     {
       id: 'dashboard',
@@ -133,6 +137,43 @@ export const Navigation: React.FC<NavigationProps> = ({
             >
               <Scale className="w-3.5 h-3.5 shrink-0" />
               <span className="hidden xl:inline">Dasar Hukum</span>
+            </button>
+
+            {/* Indikator Akun / Tombol Upgrade PRO & Sinkronisasi Cloud */}
+            <button
+              onClick={onOpenProModal}
+              className={`h-8 sm:h-9 px-2 sm:px-2.5 rounded-lg border text-xs font-mono font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+                isPro
+                  ? 'bg-[#39FF14]/15 border-[#39FF14]/50 hover:bg-[#39FF14]/25 text-[#39FF14] shadow-[0_0_12px_rgba(57,255,20,0.25)]'
+                  : user
+                  ? 'bg-[#161626] border-[#00F0FF]/40 hover:border-[#FFE600] text-white hover:text-[#FFE600] shadow-[0_0_8px_rgba(0,240,255,0.15)]'
+                  : 'bg-[#161626] border-[#FFE600]/30 hover:border-[#FFE600] text-[#FFE600] shadow-[0_0_8px_rgba(255,230,0,0.15)]'
+              }`}
+              title={
+                isPro
+                  ? `Akun PRO Aktif: ${countdown.formatted} tersisa. Klik untuk detail.`
+                  : user
+                  ? 'Akun Gratis (Data di Browser). Klik untuk upgrade ke PRO.'
+                  : 'Data di Browser. Klik untuk Masuk atau Upgrade ke PRO.'
+              }
+            >
+              {isPro ? (
+                <>
+                  <Crown className="w-3.5 h-3.5 fill-[#39FF14] shrink-0" />
+                  <span className="hidden sm:inline">PRO</span>
+                  <span className="text-[10px] text-white/90 font-normal hidden lg:inline">({countdown.days}h)</span>
+                </>
+              ) : (
+                <>
+                  <Cloud className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
+                  <span className="hidden sm:inline">
+                    {user ? 'Akun Gratis' : 'Data di Browser'}
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded text-[9px] bg-gradient-to-r from-[#FFE600] to-[#FF2BD6] text-[#0A0A12] font-black uppercase tracking-wider shrink-0">
+                    PRO 10K
+                  </span>
+                </>
+              )}
             </button>
 
             {/* Menu Profil Karyawan Cepat */}
