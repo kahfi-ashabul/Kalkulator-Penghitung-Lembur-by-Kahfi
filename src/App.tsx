@@ -19,6 +19,9 @@ import { SupportModal } from './components/modals/SupportModal';
 import { AttendanceModal } from './components/modals/AttendanceModal';
 import { OnboardingModal } from './components/modals/OnboardingModal';
 import { Footer } from './components/Footer';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { ProModal } from './components/modals/ProModal';
+import { AdScripts } from './components/AdScripts';
 import { 
   OvertimeEntry, 
   OvertimeCalculationResult, 
@@ -44,9 +47,12 @@ import {
 } from './utils/storage';
 import { playCyberClick, playCyberSuccess } from './utils/audio';
 
-export default function App() {
+function AppInner() {
+  const { isPro, triggerCloudSync } = useAuth();
+
   // Screen state - Initial Screen is Dashboard Ringkasan Lembur as requested
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
+  const [isProModalOpen, setIsProModalOpen] = useState<boolean>(false);
 
   // Stored state
   const [entries, setEntries] = useState<OvertimeEntry[]>([]);
@@ -234,6 +240,14 @@ export default function App() {
     handleSaveSettings(updated);
   };
 
+  // Auto-sync ke cloud setiap kali entries atau attendanceMap berubah (khusus akun PRO)
+  useEffect(() => {
+    if (isPro) {
+      triggerCloudSync();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entries, attendanceMap]);
+
   return (
     <div className="min-h-screen flex flex-col cyber-canvas text-[#E4E1ED] pb-16 md:pb-0">
       {/* Pinned Navigation Deck */}
@@ -255,6 +269,10 @@ export default function App() {
         onOpenSupport={() => {
           if (settings.audioFeedback) playCyberClick();
           setIsSupportOpen(true);
+        }}
+        onOpenProModal={() => {
+          if (settings.audioFeedback) playCyberClick();
+          setIsProModalOpen(true);
         }}
         audioFeedback={settings.audioFeedback}
         onToggleAudio={handleToggleAudio}
@@ -399,6 +417,23 @@ export default function App() {
         isOpen={isSupportOpen}
         onClose={() => setIsSupportOpen(false)}
       />
+
+      {/* Modal Upgrade PRO & Login Supabase */}
+      <ProModal
+        isOpen={isProModalOpen}
+        onClose={() => setIsProModalOpen(false)}
+      />
+
+      {/* Iklan kondisional — hanya untuk pengguna non-PRO */}
+      <AdScripts />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppInner />
+    </AuthProvider>
   );
 }
