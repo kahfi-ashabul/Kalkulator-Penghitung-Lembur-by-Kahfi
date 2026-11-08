@@ -47,7 +47,7 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  // Handler Pembayaran DOKU (Simulasi & Integrasi Gateway)
+  // Handler Pembayaran DOKU (Integrasi Otomatis Checkout Gateway)
   const handlePayWithDoku = async () => {
     if (!user) {
       await loginWithGoogle();
@@ -60,14 +60,31 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
     try {
       const plan = SUBSCRIPTION_PLANS[selectedPlan];
       
-      // Simulasi panggilan endpoint DOKU Payment Gateway
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await fetch('/api/doku-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          plan: selectedPlan,
+          userId: user.id,
+          email: user.email,
+          name: user.user_metadata?.full_name || user.email?.split('@')[0],
+        }),
+      });
 
-      setPaymentMessage(
-        `Memproses pembayaran ${plan.name} (${plan.priceFormatted}) via DOKU Gateway... Siapkan QRIS atau Virtual Account.`
-      );
+      const data = await res.json();
+
+      if (!res.ok || !data.paymentUrl) {
+        throw new Error(data.error || 'Gagal menghubungi DOKU');
+      }
+
+      setPaymentMessage(`Membuka halaman pembayaran resmi DOKU (${plan.priceFormatted})...`);
+      
+      // Buka URL Checkout DOKU resmi (Halaman Pembayaran QRIS / VA)
+      window.location.href = data.paymentUrl;
     } catch (err: any) {
-      setPaymentMessage('Gagal menghubungi gateway DOKU: ' + (err?.message || 'Koneksi error'));
+      setPaymentMessage('Pemberitahuan: ' + (err?.message || 'Gagal membuat tagihan DOKU'));
     } finally {
       setIsProcessingPayment(false);
     }
