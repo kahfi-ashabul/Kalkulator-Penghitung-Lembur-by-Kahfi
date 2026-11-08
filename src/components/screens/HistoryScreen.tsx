@@ -28,7 +28,6 @@ import {
   getCutoffDateRange,
   clampCustomRange
 } from '../../utils/calculations';
-import { AdSlot } from '../AdSlot';
 import { exportToCSV, exportToJSON } from '../../utils/exportImport';
 import { playCyberClick, playCyberSuccess } from '../../utils/audio';
 
@@ -267,9 +266,6 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Adsterra Leaderboard 728x90 */}
-      <AdSlot type="leaderboard" />
 
       {/* Tab Switcher: Riwayat Lembur vs Log Catatan Kehadiran */}
       <div className="flex items-center gap-2 border-b border-white/10 pb-2">

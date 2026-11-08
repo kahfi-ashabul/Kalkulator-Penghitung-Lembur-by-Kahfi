@@ -9,6 +9,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { UserSettings } from '../../types/overtime';
+import { parseRupiah } from '../../utils/calculations';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -27,14 +28,24 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [namaPerusahaan, setNamaPerusahaan] = useState(settings.namaPerusahaan || '');
   const [defaultGajiPokok, setDefaultGajiPokok] = useState(settings.defaultGajiPokok || 0);
   const [defaultTunjangan, setDefaultTunjangan] = useState(settings.defaultTunjangan || 0);
+  const [gajiPokokStr, setGajiPokokStr] = useState<string>(
+    settings.defaultGajiPokok ? settings.defaultGajiPokok.toLocaleString('id-ID') : ''
+  );
+  const [tunjanganStr, setTunjanganStr] = useState<string>(
+    settings.defaultTunjangan ? settings.defaultTunjangan.toLocaleString('id-ID') : ''
+  );
 
   // Sync state dari settings setiap kali modal dibuka
   useEffect(() => {
     if (isOpen) {
       setNamaKaryawan(settings.namaKaryawan || '');
       setNamaPerusahaan(settings.namaPerusahaan || '');
-      setDefaultGajiPokok(settings.defaultGajiPokok || 0);
-      setDefaultTunjangan(settings.defaultTunjangan || 0);
+      const gp = settings.defaultGajiPokok || 0;
+      const tj = settings.defaultTunjangan || 0;
+      setDefaultGajiPokok(gp);
+      setDefaultTunjangan(tj);
+      setGajiPokokStr(gp > 0 ? gp.toLocaleString('id-ID') : '');
+      setTunjanganStr(tj > 0 ? tj.toLocaleString('id-ID') : '');
     }
   }, [isOpen, settings]);
 
@@ -121,31 +132,45 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
             <div>
               <label className="text-[#b9cacb] mb-1 block">Gaji Pokok Bulanan (Rp)</label>
-              <input
-                type="number"
-                step="500000"
-                min="0"
-                value={defaultGajiPokok}
-                onChange={(e) => setDefaultGajiPokok(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white focus:outline-none focus:border-[#39FF14]"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-xs font-mono text-[#7A7A99]">Rp</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={gajiPokokStr}
+                  onChange={(e) => {
+                    const raw = parseRupiah(e.target.value);
+                    setDefaultGajiPokok(raw);
+                    setGajiPokokStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                  }}
+                  className="w-full pl-10 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono focus:outline-none focus:border-[#39FF14]"
+                  placeholder="0"
+                />
+              </div>
               <span className="text-[10px] text-[#7A7A99] mt-0.5 block">
-                Upah 1 jam lembur dihitung 1/173 × (Gaji Pokok + Tunjangan Tetap).
+                Upah 1 jam lembur dihitung 1/173 × (Gaji Pokok + Tunjangan Tetap). Bebas masukkan nominal berapapun.
               </span>
             </div>
 
             <div>
               <label className="text-[#b9cacb] mb-1 block">Tunjangan Tetap (Rp)</label>
-              <input
-                type="number"
-                step="100000"
-                min="0"
-                value={defaultTunjangan}
-                onChange={(e) => setDefaultTunjangan(parseFloat(e.target.value) || 0)}
-                className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white focus:outline-none focus:border-[#39FF14]"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-2.5 text-xs font-mono text-[#7A7A99]">Rp</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={tunjanganStr}
+                  onChange={(e) => {
+                    const raw = parseRupiah(e.target.value);
+                    setDefaultTunjangan(raw);
+                    setTunjanganStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                  }}
+                  className="w-full pl-10 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono focus:outline-none focus:border-[#39FF14]"
+                  placeholder="0"
+                />
+              </div>
               <span className="text-[10px] text-[#7A7A99] mt-0.5 block">
-                Opsional, komponen tunjangan tetap bulanan (PP No. 35/2021).
+                Opsional, komponen tunjangan tetap bulanan (PP No. 35/2021). Bebas masukkan nominal berapapun.
               </span>
             </div>
           </div>

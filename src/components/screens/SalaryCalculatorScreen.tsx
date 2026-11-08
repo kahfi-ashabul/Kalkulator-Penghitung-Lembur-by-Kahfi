@@ -13,20 +13,24 @@ import {
   Percent,
   Sliders,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  CheckCircle2,
+  Briefcase
 } from 'lucide-react';
-import { OvertimeEntry, UserSettings, Deductions } from '../../types/overtime';
+import { OvertimeEntry, UserSettings, Deductions, AttendanceRecord } from '../../types/overtime';
 import { formatRupiah, parseRupiah, getCutoffDateRange } from '../../utils/calculations';
 import { playCyberClick, playCyberSuccess } from '../../utils/audio';
 
 interface SalaryCalculatorScreenProps {
   entries: OvertimeEntry[];
   settings: UserSettings;
+  attendanceMap?: Record<string, AttendanceRecord>;
 }
 
 export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   entries,
   settings,
+  attendanceMap = {},
 }) => {
   const [mode, setMode] = useState<'bulanan' | 'harian'>('bulanan');
 
@@ -72,11 +76,36 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   });
 
   const [copied, setCopied] = useState<boolean>(false);
+  const [useStoredAttendance, setUseStoredAttendance] = useState<boolean>(true);
 
   // Cut-off date range object
   const activeDateRange = useMemo(() => {
     return getCutoffDateRange(selectedYear, selectedMonth, cutoffMode, customStart, customEnd);
   }, [selectedYear, selectedMonth, cutoffMode, customStart, customEnd]);
+
+  // Attendance recap stats for selected cut-off date range
+  const attendanceStats = useMemo(() => {
+    const list = Object.values(attendanceMap || {});
+    const inRange = list.filter(
+      (a) => a.tanggal >= activeDateRange.startDate && a.tanggal <= activeDateRange.endDate
+    );
+    const masuk = inRange.filter((a) => a.status === 'masuk').length;
+    const sakit = inRange.filter((a) => a.status === 'sakit').length;
+    const izin = inRange.filter((a) => a.status === 'izin').length;
+    const cuti = inRange.filter((a) => a.status === 'cuti').length;
+    return { masuk, sakit, izin, cuti, total: inRange.length };
+  }, [attendanceMap, activeDateRange]);
+
+  // Auto-sync jumlahHariMasuk when attendance stats change if useStoredAttendance is enabled
+  useEffect(() => {
+    if (useStoredAttendance) {
+      if (attendanceStats.masuk > 0) {
+        setJumlahHariMasuk(attendanceStats.masuk);
+      } else {
+        setJumlahHariMasuk(settings.defaultSistem === '6_hari' ? 25 : 21);
+      }
+    }
+  }, [useStoredAttendance, attendanceStats.masuk, settings.defaultSistem]);
 
   // Overtime sum from Riwayat for selected cut-off date range
   const storedOvertimeAmount = useMemo(() => {
@@ -109,33 +138,103 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
 
   const finalTakeHomePay = mode === 'bulanan' ? takeHomePayBulanan : takeHomePayHarian;
   const finalGajiKotor = mode === 'bulanan' ? gajiKotorBulanan : gajiKotorHarian;
+  const [shareToast, setShareToast] = useState<string | null>(null);
+
+  const generateSlipText = () => {
+    const isBulanan = mode === 'bulanan';
+    const now = new Date();
+    const namaBulan = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ][now.getMonth()];
+    const cetakDate = `${now.getDate()} ${namaBulan} ${now.getFullYear()}`;
+
+    const potonganList: string[] = [];
+    if (deductions.bpjsKetenagakerjaan > 0) {
+      potonganList.push(`  • BPJS Ketenagakerjaan : -${formatRupiah(deductions.bpjsKetenagakerjaan)}`);
+    }
+    if (deductions.bpjsKesehatan > 0) {
+      potonganList.push(`  • BPJS Kesehatan (1%)  : -${formatRupiah(deductions.bpjsKesehatan)}`);
+    }
+    if (deductions.pph21 && deductions.pph21 > 0) {
+      potonganList.push(`  • PPh 21 / Pajak       : -${formatRupiah(deductions.pph21)}`);
+    }
+    if (deductions.kasbon && deductions.kasbon > 0) {
+      potonganList.push(`  • Kasbon / Pinjaman    : -${formatRupiah(deductions.kasbon)}`);
+    }
+    if (deductions.lainnya && deductions.lainnya > 0) {
+      potonganList.push(`  • Potongan Lainnya     : -${formatRupiah(deductions.lainnya)}`);
+    }
+
+    const lines = [
+      `=========================================`,
+      `📄 *SLIP ESTIMASI GAJI & UPAH LEMBUR*`,
+      `🏢 *${settings.namaPerusahaan || 'PT Perusahaan'}*`,
+      `=========================================`,
+      `👤 *Nama Karyawan* : ${settings.namaKaryawan || 'Karyawan'}`,
+      `📅 *Periode Gaji*   : ${activeDateRange.label}`,
+      `📌 *Sistem Kerja*   : ${isBulanan ? 'Bulanan' : 'Harian'} (${settings.defaultSistem === '6_hari' ? '6 Hari Kerja' : '5 Hari Kerja'})`,
+      `🗓️ *Rekap Kehadiran*: ${attendanceStats.masuk} Hadir | ${attendanceStats.sakit} Sakit | ${attendanceStats.izin} Izin | ${attendanceStats.cuti} Cuti`,
+      `-----------------------------------------`,
+      `💵 *KOMPONEN PENDAPATAN (KOTOR):*`,
+      isBulanan
+        ? `  • Gaji Pokok       : ${formatRupiah(gajiPokok)}\n  • Tunjangan Tetap  : ${formatRupiah(tunjanganTetap)}`
+        : `  • Upah Harian (${jumlahHariMasuk} Hari) : ${formatRupiah(pendapatanHarianTotal)}`,
+      `  • Hak Upah Lembur  : ${formatRupiah(activeOvertimeAmount)}`,
+      `👉 *TOTAL PENGHASILAN KOTOR: ${formatRupiah(finalGajiKotor)}*`,
+      `-----------------------------------------`,
+      `✂️ *KOMPONEN POTONGAN:*`,
+      potonganList.length > 0 ? potonganList.join('\n') : `  • Nihil / Tidak Ada Potongan`,
+      `👉 *TOTAL SELURUH POTONGAN: -${formatRupiah(totalPotongan)}*`,
+      `=========================================`,
+      `💰 *TAKE HOME PAY (BERSIH DITERIMA):*`,
+      `⭐ *${formatRupiah(finalTakeHomePay)}*`,
+      `=========================================`,
+      `🗓️ Tanggal Cetak: ${cetakDate}`,
+      `⚡ Dihitung akurat sesuai regulasi PP No. 35/2021`,
+      `🌐 https://kalembur.vercel.app`,
+    ];
+
+    return lines.filter(Boolean).join('\n');
+  };
 
   const handleCopySummary = () => {
     if (settings.audioFeedback) playCyberClick();
-    const lines = [
-      `*SLIP ESTIMASI GAJI (${mode === 'bulanan' ? 'BULANAN' : 'HARIAN'})*`,
-      `Karyawan: ${settings.namaKaryawan}`,
-      `Perusahaan: ${settings.namaPerusahaan}`,
-      `---------------------------------`,
-      mode === 'bulanan'
-        ? `Gaji Pokok: ${formatRupiah(gajiPokok)}\nTunjangan Tetap: ${formatRupiah(tunjanganTetap)}`
-        : `Upah Harian: ${formatRupiah(effectiveUpahHarian)} × ${jumlahHariMasuk} Hari = ${formatRupiah(pendapatanHarianTotal)}`,
-      `Hak Upah Lembur: ${formatRupiah(activeOvertimeAmount)}`,
-      `*Total Penghasilan Kotor: ${formatRupiah(finalGajiKotor)}*`,
-      `---------------------------------`,
-      `Potongan BPJS Ketenagakerjaan: -${formatRupiah(deductions.bpjsKetenagakerjaan)}`,
-      `Potongan BPJS Kesehatan: -${formatRupiah(deductions.bpjsKesehatan)}`,
-      deductions.pph21 ? `Potongan PPh 21: -${formatRupiah(deductions.pph21)}` : '',
-      deductions.kasbon ? `Kasbon / Pinjaman: -${formatRupiah(deductions.kasbon)}` : '',
-      `Total Seluruh Potongan: -${formatRupiah(totalPotongan)}`,
-      `=================================`,
-      `*TAKE HOME PAY (BERSIH): ${formatRupiah(finalTakeHomePay)}*`,
-      `Estimasi mandiri by Kalkulator Penghitung Lembur by Kahfi`,
-    ].filter(Boolean).join('\n');
-
-    navigator.clipboard.writeText(lines);
+    const slip = generateSlipText();
+    navigator.clipboard.writeText(slip);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setShareToast('Slip gaji berhasil disalin ke clipboard!');
+    setTimeout(() => {
+      setCopied(false);
+      setShareToast(null);
+    }, 2500);
+  };
+
+  const handleShareSlip = async () => {
+    if (settings.audioFeedback) playCyberSuccess();
+    const slip = generateSlipText();
+    const title = `Slip Gaji ${settings.namaKaryawan || 'Karyawan'} - ${activeDateRange.label}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text: slip,
+        });
+        setShareToast('Slip gaji berhasil dibagikan!');
+        setTimeout(() => setShareToast(null), 3000);
+        return;
+      } catch (err: any) {
+        if (err.name === 'AbortError') return;
+      }
+    }
+
+    // Direct WhatsApp share fallback
+    const encoded = encodeURIComponent(slip);
+    const waUrl = `https://api.whatsapp.com/send?text=${encoded}`;
+    window.open(waUrl, '_blank');
+    setShareToast('Membuka WhatsApp untuk membagikan slip...');
+    setTimeout(() => setShareToast(null), 3000);
   };
 
   const handleQuickPresetPotongan = () => {
@@ -258,6 +357,28 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                     />
                   </div>
                 </div>
+
+                {/* Info Rekap Absensi Periode Terpilih (Bulanan) */}
+                <div className="p-3 rounded-lg bg-[#0A0A12] border border-white/5 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+                  <div className="flex items-center gap-2 text-[#b9cacb]">
+                    <Briefcase className="w-3.5 h-3.5 text-[#39FF14]" />
+                    <span>Rekap Absensi Periode ({activeDateRange.label}):</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded bg-[#39FF14]/15 text-[#39FF14] font-bold border border-[#39FF14]/30">
+                      {attendanceStats.masuk} Hadir
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-[#F59E0B]/15 text-[#F59E0B] font-bold border border-[#F59E0B]/30">
+                      {attendanceStats.sakit} Sakit
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-[#EC4899]/15 text-[#EC4899] font-bold border border-[#EC4899]/30">
+                      {attendanceStats.izin} Izin
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-[#A855F7]/15 text-[#A855F7] font-bold border border-[#A855F7]/30">
+                      {attendanceStats.cuti} Cuti
+                    </span>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
@@ -342,22 +463,88 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-mono text-[#b9cacb] mb-1 block">
-                      Jumlah Hari Masuk Kerja
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="31"
-                      value={jumlahHariMasuk}
-                      onChange={(e) => setJumlahHariMasuk(parseInt(e.target.value, 10) || 0)}
-                      className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#FF2BD6]"
-                    />
+                    <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+                      <label className="text-xs font-mono text-[#b9cacb] font-bold flex items-center gap-1">
+                        <Briefcase className="w-3.5 h-3.5 text-[#39FF14]" />
+                        <span>Jumlah Hari Masuk Kerja</span>
+                      </label>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUseStoredAttendance(true);
+                            if (attendanceStats.masuk > 0) {
+                              setJumlahHariMasuk(attendanceStats.masuk);
+                            }
+                          }}
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono transition-all flex items-center gap-1 border ${
+                            useStoredAttendance
+                              ? 'bg-[#39FF14]/20 border-[#39FF14]/50 text-[#39FF14] font-bold shadow-[0_0_8px_rgba(57,255,20,0.2)]'
+                              : 'bg-[#1A1A2E] border-white/10 text-[#7A7A99] hover:text-white'
+                          }`}
+                          title="Ambil otomatis jumlah hari hadir dari rekap catatan absensi periode ini"
+                        >
+                          <CheckCircle2 className="w-3 h-3 text-[#39FF14]" />
+                          <span>Dari Rekap Absensi ({attendanceStats.masuk} Hadir)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setUseStoredAttendance(false)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-mono transition-all border ${
+                            !useStoredAttendance
+                              ? 'bg-[#FF2BD6]/20 border-[#FF2BD6]/50 text-[#FF2BD6] font-bold shadow-[0_0_8px_rgba(255,43,214,0.2)]'
+                              : 'bg-[#1A1A2E] border-white/10 text-[#7A7A99] hover:text-white'
+                          }`}
+                          title="Ketik manual jumlah hari masuk kerja"
+                        >
+                          <span>Manual</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="relative flex items-center">
+                      <input
+                        type="number"
+                        min="0"
+                        max="31"
+                        value={jumlahHariMasuk}
+                        onChange={(e) => {
+                          setJumlahHariMasuk(parseInt(e.target.value, 10) || 0);
+                          setUseStoredAttendance(false);
+                        }}
+                        className={`w-full px-3 py-2 rounded bg-[#1A1A2E] border font-mono text-sm focus:outline-none transition-all ${
+                          useStoredAttendance
+                            ? 'border-[#39FF14]/40 text-[#39FF14]'
+                            : 'border-white/10 text-white focus:border-[#FF2BD6]'
+                        }`}
+                      />
+                      {useStoredAttendance && (
+                        <span className="absolute right-3 text-[10px] font-mono text-[#39FF14] bg-[#39FF14]/15 px-2 py-0.5 rounded border border-[#39FF14]/30">
+                          Sinkron Otomatis
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Breakdown status kehadiran periode ini */}
+                    <div className="mt-1.5 text-[10px] font-mono text-[#7A7A99] flex flex-wrap items-center gap-2">
+                      <span>Rekap Periode:</span>
+                      <span className="text-[#39FF14] font-bold">{attendanceStats.masuk} Hadir</span>
+                      <span>•</span>
+                      <span className="text-[#F59E0B]">{attendanceStats.sakit} Sakit</span>
+                      <span>•</span>
+                      <span className="text-[#EC4899]">{attendanceStats.izin} Izin</span>
+                      <span>•</span>
+                      <span className="text-[#A855F7]">{attendanceStats.cuti} Cuti</span>
+                    </div>
                   </div>
-                  <div className="p-2.5 rounded bg-[#0A0A12] border border-white/10 flex flex-col justify-center">
+
+                  <div className="p-3 rounded bg-[#0A0A12] border border-white/10 flex flex-col justify-center">
                     <span className="text-[11px] text-[#7A7A99] font-mono">Total Upah Kehadiran:</span>
-                    <span className="text-sm font-bold text-white font-mono">
+                    <span className="text-base sm:text-lg font-bold text-white font-mono mt-0.5">
                       {formatRupiah(pendapatanHarianTotal)}
+                    </span>
+                    <span className="text-[10px] text-[#b9cacb] font-mono mt-0.5">
+                      {jumlahHariMasuk} hari × {formatRupiah(effectiveUpahHarian)}/hari
                     </span>
                   </div>
                 </div>
@@ -534,7 +721,8 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                 <label className="text-[#b9cacb] mb-1 block">BPJS Ketenagakerjaan (JHT & JP)</label>
                 <input
                   type="number"
-                  step="5000"
+                  step="any"
+                  min="0"
                   value={deductions.bpjsKetenagakerjaan}
                   onChange={(e) =>
                     setDeductions({ ...deductions, bpjsKetenagakerjaan: parseFloat(e.target.value) || 0 })
@@ -547,7 +735,8 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                 <label className="text-[#b9cacb] mb-1 block">BPJS Kesehatan (1%)</label>
                 <input
                   type="number"
-                  step="5000"
+                  step="any"
+                  min="0"
                   value={deductions.bpjsKesehatan}
                   onChange={(e) =>
                     setDeductions({ ...deductions, bpjsKesehatan: parseFloat(e.target.value) || 0 })
@@ -560,7 +749,8 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                 <label className="text-[#b9cacb] mb-1 block">Estimasi PPh 21 / Pajak</label>
                 <input
                   type="number"
-                  step="10000"
+                  step="any"
+                  min="0"
                   value={deductions.pph21}
                   onChange={(e) =>
                     setDeductions({ ...deductions, pph21: parseFloat(e.target.value) || 0 })
@@ -573,7 +763,8 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                 <label className="text-[#b9cacb] mb-1 block">Kasbon / Pinjaman Kantor</label>
                 <input
                   type="number"
-                  step="50000"
+                  step="any"
+                  min="0"
                   value={deductions.kasbon}
                   onChange={(e) =>
                     setDeductions({ ...deductions, kasbon: parseFloat(e.target.value) || 0 })
@@ -694,23 +885,29 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
           <div className="grid grid-cols-2 gap-3 font-mono text-xs">
             <button
               onClick={handleCopySummary}
-              className="py-2.5 px-3 rounded bg-[#1A1A2E] border border-white/10 hover:border-[#00F0FF] text-[#00F0FF] transition-all flex items-center justify-center gap-1.5"
+              className="py-2.5 px-3 rounded bg-[#1A1A2E] border border-white/10 hover:border-[#00F0FF] text-[#00F0FF] transition-all flex items-center justify-center gap-1.5 shadow-sm"
+              title="Salin rincian slip gaji berformat rapi untuk WhatsApp / Dokumen"
             >
               {copied ? <Check className="w-4 h-4 text-[#39FF14]" /> : <Copy className="w-4 h-4" />}
-              <span>{copied ? 'Tersalin!' : 'Salin Slip Gaji'}</span>
+              <span>{copied ? 'Tersalin ke Clipboard!' : 'Salin Slip Gaji'}</span>
             </button>
 
             <button
-              onClick={() => {
-                if (settings.audioFeedback) playCyberSuccess();
-                alert('Slip gaji siap diekspor dan dicetak.');
-              }}
+              onClick={handleShareSlip}
               className="py-2.5 px-3 rounded bg-gradient-to-r from-[#00F0FF] to-[#0082FB] text-[#0A0A12] font-bold hover:opacity-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-1.5"
+              title="Bagikan slip via WhatsApp / Aplikasi Lainnya"
             >
               <Share2 className="w-4 h-4" />
               <span>Bagikan Slip</span>
             </button>
           </div>
+
+          {/* Toast Notification */}
+          {shareToast && (
+            <div className="p-2.5 rounded bg-[#00F0FF]/15 border border-[#00F0FF]/40 text-[#00F0FF] text-xs font-mono text-center animate-in fade-in slide-in-from-bottom-2 duration-200">
+              {shareToast}
+            </div>
+          )}
         </div>
       </div>
     </div>

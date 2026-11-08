@@ -32,7 +32,7 @@ export const Navigation: React.FC<NavigationProps> = ({
   totalEntriesCount,
   namaKaryawan,
 }) => {
-  const navItems: Array<{ id: ScreenType; label: string; icon: React.ReactNode; badge?: number }> = [
+  const navItems: Array<{ id: ScreenType; label: string; icon: React.ReactNode }> = [
     {
       id: 'dashboard',
       label: 'Dashboard',
@@ -52,7 +52,6 @@ export const Navigation: React.FC<NavigationProps> = ({
       id: 'riwayat',
       label: 'Riwayat',
       icon: <History className="w-4 h-4" />,
-      badge: totalEntriesCount,
     },
   ];
 
@@ -106,11 +105,6 @@ export const Navigation: React.FC<NavigationProps> = ({
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                  {item.badge !== undefined && item.badge > 0 && (
-                    <span className="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-[#00F0FF]/20 text-[#00F0FF] border border-[#00F0FF]/30">
-                      {item.badge}
-                    </span>
-                  )}
                   {isActive && (
                     <div className="absolute -bottom-1 left-2 right-2 h-[2px] bg-gradient-to-r from-transparent via-[#00F0FF] to-transparent shadow-[0_0_8px_#00F0FF]" />
                   )}
@@ -217,11 +211,6 @@ export const Navigation: React.FC<NavigationProps> = ({
                   {item.icon}
                 </div>
                 <span className="tracking-tight">{item.label}</span>
-                {item.badge !== undefined && item.badge > 0 && (
-                  <span className="absolute top-0.5 right-1 px-1 py-0.2 rounded-full text-[9px] bg-[#00F0FF] text-[#0A0A12] font-bold">
-                    {item.badge}
-                  </span>
-                )}
               </button>
             );
           })}

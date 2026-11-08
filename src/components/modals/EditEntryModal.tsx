@@ -193,7 +193,8 @@ export const EditEntryModal: React.FC<EditEntryModalProps> = ({ isOpen, onClose,
               </label>
               <input
                 type="number"
-                step="100000"
+                step="any"
+                min="0"
                 value={upahSebulan}
                 onChange={(e) => setUpahSebulan(parseFloat(e.target.value) || 0)}
                 className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white focus:outline-none focus:border-[#00F0FF]"

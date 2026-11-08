@@ -298,6 +298,7 @@ export default function App() {
           <SalaryCalculatorScreen
             entries={entries}
             settings={settings}
+            attendanceMap={attendanceMap}
           />
         )}
 

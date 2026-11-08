@@ -28,7 +28,7 @@ import {
 } from '../../types/overtime';
 import { calculateOvertime, formatRupiah, formatJam, parseRupiah, formatTanggal, detectAutoDayType, getNamaHari } from '../../utils/calculations';
 import { playCyberClick, playCyberSuccess } from '../../utils/audio';
-import { AdSlot } from '../AdSlot';
+
 
 interface OvertimeCalculatorScreenProps {
   settings: UserSettings;
@@ -1150,8 +1150,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
             </div>
           </div>
 
-          {/* Adsterra Banner 728x90 */}
-          <AdSlot type="leaderboard" />
+          
         </div>
       </div>
     </div>

@@ -1,32 +1,31 @@
 import { OvertimeEntry, AttendanceRecord, AttendanceStatus } from '../types/overtime';
-import { calculateOvertime } from './calculations';
+import { calculateOvertime, getNamaHari } from './calculations';
 
 /**
- * Standard CSV Column Headers (100% synchronized with import parser)
- * Sekarang mencakup kolom Status Kehadiran & Jam Kerja Reguler
+ * Standard CSV Column Headers (Format Laporan Human-Readable & Rapi untuk Excel)
  */
 export const CSV_HEADERS = [
+  'No',
   'Tanggal',
-  'SistemKerja',
-  'JenisHari',
-  'LiburResmi',
-  'StatusKehadiran',
-  'JamReguler',
-  'JamLembur',
-  'UpahSebulan',
-  'UpahSejam',
-  'TotalLembur',
-  'Catatan',
-  'ID',
+  'Hari',
+  'Sistem Kerja',
+  'Jenis Hari',
+  'Status Kehadiran',
+  'Jam Kerja Reguler',
+  'Jam Lembur',
+  'Upah Sejam (Rp)',
+  'Total Upah Lembur (Rp)',
+  'Catatan / Keterangan',
 ];
 
 /**
- * Export entries and attendance records to UTF-8 CSV with BOM for seamless Excel/Google Sheets opening
+ * Export entries and attendance records to UTF-8 CSV with BOM for seamless Excel/Google Sheets opening.
+ * Simpel, rapi, detail, dan dilengkapi baris TOTAL rekapitulasi.
  */
 export function exportToCSV(
   entries: OvertimeEntry[],
   attendanceMap?: Record<string, AttendanceRecord>,
-  filenamePrefix = 'riwayat-lembur-kahfi'
+  filenamePrefix = 'laporan-lembur-kahfi'
 ): void {
   // Gabungkan entri lembur dan rekapan kehadiran per tanggal
   const dateMap = new Map<string, { entry?: OvertimeEntry; attendance?: AttendanceRecord }>();
@@ -46,52 +45,127 @@ export function exportToCSV(
   // Urutkan tanggal secara kronologis menurun (terbaru di atas)
   const sortedDates = Array.from(dateMap.keys()).sort((a, b) => b.localeCompare(a));
 
-  const rows = sortedDates.map((date) => {
+  let totalJamReguler = 0;
+  let totalJamLembur = 0;
+  let totalNominalLembur = 0;
+  let countHadir = 0;
+  let countSakit = 0;
+  let countIzin = 0;
+  let countCuti = 0;
+
+  const rows = sortedDates.map((date, idx) => {
     const item = dateMap.get(date)!;
     const e = item.entry;
     const att = item.attendance;
 
-    const sistem = e ? e.sistem : '5_hari';
-    const jenisHari = e ? e.jenisHari : 'biasa';
-    const liburResmi = e ? (e.libur ? 'TRUE' : 'FALSE') : 'FALSE';
+    const no = (idx + 1).toString();
+    const hari = getNamaHari(date);
+    const sistemLabel = e ? (e.sistem === '6_hari' ? '6 Hari Kerja' : '5 Hari Kerja') : '5 Hari Kerja';
     
-    // Status Kehadiran
-    const statusKehadiran = att
-      ? att.status.toUpperCase()
-      : (e && e.jamLembur > 0 ? 'LEMBUR' : '-');
-      
-    // Jam Reguler
-    const jamReguler = att
-      ? att.jamKerjaReguler.toString()
-      : (e?.jamKerjaReguler ? e.jamKerjaReguler.toString() : '0');
+    // Label jenis hari
+    let jenisHariLabel = 'Hari Biasa';
+    if (e?.libur) {
+      jenisHariLabel = 'Libur Resmi';
+    } else if (e?.jenisHari === 'minggu') {
+      jenisHariLabel = 'Istirahat Minggu';
+    } else if (e?.jenisHari === 'sabtu') {
+      jenisHariLabel = 'Istirahat Sabtu';
+    }
 
-    const jamLembur = e ? e.jamLembur.toString() : '0';
-    const upahSebulan = e ? Math.round(e.upahSebulan).toString() : '0';
-    const upahSejam = e ? Math.round(e.upahSejam).toString() : '0';
-    const totalLembur = e ? Math.round(e.totalLembur).toString() : '0';
-    
+    // Status kehadiran
+    let statusLabel = '-';
+    if (att) {
+      if (att.status === 'masuk') {
+        statusLabel = 'Hadir';
+        countHadir++;
+      } else if (att.status === 'sakit') {
+        statusLabel = 'Sakit';
+        countSakit++;
+      } else if (att.status === 'izin') {
+        statusLabel = 'Izin';
+        countIzin++;
+      } else if (att.status === 'cuti') {
+        statusLabel = 'Cuti';
+        countCuti++;
+      } else {
+        statusLabel = 'Libur Off';
+      }
+    } else if (e && e.jamLembur > 0) {
+      statusLabel = 'Hadir (Lembur)';
+      countHadir++;
+    }
+
+    const jamReg = att ? att.jamKerjaReguler : (e?.jamKerjaReguler || 0);
+    const jamLbr = e ? e.jamLembur : 0;
+    const upahSejamVal = e ? Math.round(e.upahSejam) : 0;
+    const totalLbrVal = e ? Math.round(e.totalLembur) : 0;
+
+    totalJamReguler += jamReg;
+    totalJamLembur += jamLbr;
+    totalNominalLembur += totalLbrVal;
+
     const notes = [e?.catatan, att?.catatan].filter(Boolean).join(' | ');
-    const id = e ? e.id : `att-${date}`;
 
     return [
+      no,
       date,
-      sistem,
-      jenisHari,
-      liburResmi,
-      statusKehadiran,
-      jamReguler,
-      jamLembur,
-      upahSebulan,
-      upahSejam,
-      totalLembur,
+      hari,
+      sistemLabel,
+      jenisHariLabel,
+      statusLabel,
+      jamReg.toString(),
+      jamLbr.toString(),
+      upahSejamVal > 0 ? upahSejamVal.toString() : '-',
+      totalLbrVal > 0 ? totalLbrVal.toString() : '0',
       `"${notes.replace(/"/g, '""')}"`,
-      id,
     ];
   });
 
-  // Use semicolon as default for Indonesian regional settings, with BOM so Excel recognizes UTF-8
-  const csvContent = '\uFEFF' + [CSV_HEADERS.join(';'), ...rows.map((r) => r.join(';'))].join('\r\n');
-  downloadBlob(csvContent, `${filenamePrefix}-${new Date().toISOString().slice(0, 10)}.csv`, 'text/csv;charset=utf-8;');
+  // Baris Total Rekapitulasi di paling bawah
+  const totalRow = [
+    'TOTAL',
+    `${sortedDates.length} Hari`,
+    '-',
+    '-',
+    '-',
+    `${countHadir} Hadir / ${countSakit} Sakit / ${countIzin} Izin / ${countCuti} Cuti`,
+    totalJamReguler.toString(),
+    totalJamLembur.toString(),
+    '-',
+    totalNominalLembur.toString(),
+    `"Total Hak Upah Lembur: Rp ${totalNominalLembur.toLocaleString('id-ID')}"`,
+  ];
+
+  // Baris Informasi Aplikasi
+  const infoRow = [
+    'INFO',
+    `Diekspor: ${new Date().toISOString().slice(0, 10)}`,
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '"Laporan dihitung akurat sesuai regulasi PP No. 35/2021 via https://kalembur.vercel.app"',
+  ];
+
+  // Delimiter semicolon (;) dengan UTF-8 BOM (\uFEFF) agar Microsoft Excel langsung rapi
+  const csvContent =
+    '\uFEFF' +
+    [
+      CSV_HEADERS.join(';'),
+      ...rows.map((r) => r.join(';')),
+      totalRow.join(';'),
+      infoRow.join(';'),
+    ].join('\r\n');
+
+  downloadBlob(
+    csvContent,
+    `${filenamePrefix}-${new Date().toISOString().slice(0, 10)}.csv`,
+    'text/csv;charset=utf-8;'
+  );
 }
 
 /**
@@ -337,6 +411,14 @@ export function parseImportCSV(csvText: string): {
 
     const rawTanggal = parts[idxTanggal] || '';
     if (!/^\d{4}-\d{2}-\d{2}$/.test(rawTanggal)) {
+      if (
+        rawTanggal.toUpperCase().includes('TOTAL') ||
+        rawTanggal.toUpperCase().includes('INFO') ||
+        (parts[0] || '').toUpperCase().includes('TOTAL') ||
+        (parts[0] || '').toUpperCase().includes('INFO')
+      ) {
+        continue; // Lewati baris ringkasan / metadata laporan
+      }
       errors.push(`Baris ${lineNum}: Format tanggal '${rawTanggal}' tidak valid (wajib YYYY-MM-DD).`);
       continue;
     }

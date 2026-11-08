@@ -22,7 +22,6 @@ import {
 } from 'lucide-react';
 import { OvertimeEntry, UserSettings, AttendanceRecord, AttendanceStatus } from '../../types/overtime';
 import { formatRupiah, formatTanggal, formatJam, getCutoffDateRange , clampCustomRange} from '../../utils/calculations';
-import { AdSlot } from '../AdSlot';
 import { AttendanceModal } from '../modals/AttendanceModal';
 
 interface DashboardScreenProps {
@@ -917,14 +916,6 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Ruang Iklan / Sponsor Banner (Responsive 728x90 desktop, 320x50 mobile) */}
-      <AdSlot
-        type="leaderboard"
-        sponsorName="Ruang Iklan"
-        title="Slot Iklan Banner Ketenagakerjaan & HR"
-        description="Tempat ideal untuk pasang iklan software payroll, lowongan kerja, atau pelatihan karir."
-      />
 
       {/* Recent Entries & Statutory Check */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
