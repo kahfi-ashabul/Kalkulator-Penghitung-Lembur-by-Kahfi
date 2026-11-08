@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calculator, 
   RotateCcw, 
@@ -419,7 +419,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                   <div>
                     <span className="text-[#7A7A99]">Perhitungan:</span>{' '}
                     <span className="text-white">
-                      {formatRupiah(upahHarianPokok)} (Harian) + ({jamLembur}j � {formatRupiah(manualRatePerJam)})
+                      {formatRupiah(upahHarianPokok)} (Harian) + ({jamLembur}j × {formatRupiah(manualRatePerJam)})
                     </span>
                   </div>
                   <div>
@@ -892,7 +892,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                 </span>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <input
                   type="number"
                   step="0.5"
@@ -900,7 +900,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                   max="24"
                   value={jamLembur}
                   onChange={(e) => setJamLembur(parseFloat(e.target.value) || 0)}
-                  className="w-36 px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-base font-bold focus:outline-none focus:border-[#00F0FF]"
+                  className="w-full sm:w-36 px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-base font-bold focus:outline-none focus:border-[#00F0FF]"
                 />
 
                 {/* Quick hour chips */}
@@ -977,7 +977,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
             </div>
 
             {/* Hero Number Display */}
-            <div className="mt-4 text-3xl sm:text-4xl font-extrabold font-mono text-[#39FF14] tracking-tight drop-shadow-[0_0_20px_rgba(57,255,20,0.5)]">
+            <div className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-extrabold font-mono text-[#39FF14] tracking-tight break-words drop-shadow-[0_0_20px_rgba(57,255,20,0.5)]">
               {formatRupiah(calcResult.totalUpahLembur)}
             </div>
 
@@ -995,7 +995,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
 
             {/* Formula display */}
             <div className="mt-3 p-2 rounded bg-black/40 text-[11px] font-mono text-[#b9cacb] border border-white/5">
-              ?? Rumus: {calcResult.formula}
+              📐 Rumus: {calcResult.formula}
             </div>
 
             {/* Excess Overtime Warning if any */}

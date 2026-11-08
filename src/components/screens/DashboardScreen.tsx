@@ -320,7 +320,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
           </div>
 
           {/* Action Toolbar: Simetris, Rapi, Seimbang & Auto-Stretch */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
+          <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-2 w-full xl:w-auto">
             {/* Segmented Control 50:50 Simetris: Mode Pengisian Kehadiran */}
             <div className="flex items-center rounded-lg bg-[#0A0A12] border border-white/10 p-0.5 text-xs font-mono h-9 w-full sm:w-auto">
               <button
@@ -353,7 +353,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <button
               type="button"
               onClick={handleAutoFillMonthAttendance}
-              className="h-9 px-2.5 rounded bg-[#1A1A2E] border border-[#FFE600]/30 hover:border-[#FFE600] text-[#FFE600] font-mono text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap"
+              className="h-9 px-2.5 rounded bg-[#1A1A2E] border border-[#FFE600]/30 hover:border-[#FFE600] text-[#FFE600] font-mono text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap w-full sm:w-auto"
               title="Isi otomatis semua hari kerja periode ini yang belum tercatat absensinya"
             >
               <Zap className="w-3.5 h-3.5 text-[#FFE600] shrink-0" />
@@ -486,7 +486,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <DollarSign className="w-4 h-4 text-[#39FF14]" />
             <span className="font-bold text-white tracking-wide">TOTAL UPAH LEMBUR</span>
           </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-extrabold font-mono text-[#39FF14] tracking-tight drop-shadow-[0_0_16px_rgba(57,255,20,0.4)]">
+          <div className="mt-3 text-xl sm:text-2xl xl:text-3xl font-extrabold font-mono text-[#39FF14] tracking-tight break-words drop-shadow-[0_0_16px_rgba(57,255,20,0.4)]">
             {formatRupiah(totalUpahLembur)}
           </div>
           <div className="mt-2 text-xs font-mono text-[#b9cacb]">
@@ -557,7 +557,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               Rincian <ChevronRight className="w-3 h-3" />
             </button>
           </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-extrabold font-mono text-white tracking-tight">
+          <div className="mt-3 text-xl sm:text-2xl xl:text-3xl font-extrabold font-mono text-white tracking-tight break-words">
             {formatRupiah(estimasiTotalGaji)}
           </div>
           <div className="mt-2 text-xs font-mono text-[#b9cacb] flex items-center gap-1.5">
@@ -674,6 +674,12 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </div>
           )}
           <span className="text-[10px] text-[#7A7A99] shrink-0">Klik batang untuk ubah status</span>
+        </div>
+
+        {/* Mobile / Tablet Horizontal Scroll Guide */}
+        <div className="flex md:hidden items-center justify-between text-[11px] font-mono text-[#00F0FF] bg-[#00F0FF]/10 border border-[#00F0FF]/25 px-2.5 py-1.5 rounded mb-2">
+          <span>⟷ Geser grafik untuk melihat semua tanggal</span>
+          <span className="text-[10px] text-white/50">{timelineDays.length} Hari</span>
         </div>
 
         {/* Stacked Chart Area */}

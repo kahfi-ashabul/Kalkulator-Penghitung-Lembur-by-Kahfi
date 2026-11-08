@@ -267,8 +267,8 @@ export default function App() {
         namaKaryawan={settings.namaKaryawan}
       />
 
-      {/* Main Screen Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      {/* Main Screen Container - pb-28 prevents mobile bottom navigation from cutting off content */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 py-4 sm:px-6 sm:py-6 lg:p-8 pb-28 md:pb-10">
         {currentScreen === 'dashboard' && (
           <DashboardScreen
             entries={entries}

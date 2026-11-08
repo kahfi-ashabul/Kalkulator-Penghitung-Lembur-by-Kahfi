@@ -463,12 +463,12 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <div className="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 mb-2">
                       <label className="text-xs font-mono text-[#b9cacb] font-bold flex items-center gap-1">
                         <Briefcase className="w-3.5 h-3.5 text-[#39FF14]" />
                         <span>Jumlah Hari Masuk Kerja</span>
                       </label>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 self-start sm:self-auto">
                         <button
                           type="button"
                           onClick={() => {
@@ -790,7 +790,7 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
               </span>
             </div>
 
-            <div className="text-3xl sm:text-4xl font-extrabold font-mono text-[#39FF14] tracking-tight drop-shadow-[0_0_20px_rgba(57,255,20,0.5)]">
+            <div className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-mono text-[#39FF14] tracking-tight break-words drop-shadow-[0_0_20px_rgba(57,255,20,0.5)]">
               {formatRupiah(finalTakeHomePay)}
             </div>
 

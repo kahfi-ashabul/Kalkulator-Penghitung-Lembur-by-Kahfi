@@ -246,7 +246,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="h-8.5 px-2 sm:px-2.5 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#00F0FF] text-white hover:text-[#00F0FF] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap"
+                className="h-8.5 px-1.5 sm:px-2.5 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#00F0FF] text-white hover:text-[#00F0FF] text-[10px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap"
                 title="Unduh file CSV Excel lengkap"
               >
                 <FileText className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
@@ -256,7 +256,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
               <button
                 type="button"
                 onClick={handleExportJSON}
-                className="h-8.5 px-2 sm:px-2.5 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#FF2BD6] text-white hover:text-[#FF2BD6] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap"
+                className="h-8.5 px-1.5 sm:px-2.5 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#FF2BD6] text-white hover:text-[#FF2BD6] text-[10px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap"
                 title="Backup berkas JSON lengkap"
               >
                 <FileCode className="w-3.5 h-3.5 text-[#FF2BD6] shrink-0" />
@@ -498,8 +498,12 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs font-mono text-left">
+            <>
+              <div className="md:hidden flex items-center justify-between text-[11px] font-mono text-[#39FF14] bg-[#39FF14]/10 border-b border-[#39FF14]/25 px-3 py-1.5">
+                <span>⟷ Geser tabel ke kanan untuk melihat rincian & aksi</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs font-mono text-left">
                 <thead>
                   <tr className="border-b border-[#39FF14]/20 bg-[#0A0A12] text-[#7A7A99] uppercase text-[10px]">
                     <th className="py-3 px-4">Tanggal</th>
@@ -573,7 +577,8 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                 </tbody>
               </table>
             </div>
-          )}
+          </>
+        )}
         </div>
       ) : (
       <div className="rounded-lg bg-[#12121F] border border-white/10 shadow-lg overflow-hidden">
@@ -582,8 +587,12 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
             Tidak ada entri lembur yang cocok dengan kriteria pencarian / filter.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono text-left">
+          <>
+            <div className="md:hidden flex items-center justify-between text-[11px] font-mono text-[#00F0FF] bg-[#00F0FF]/10 border-b border-[#00F0FF]/25 px-3 py-1.5">
+              <span>⟷ Geser tabel ke kanan untuk melihat rincian & aksi</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs font-mono text-left">
               <thead>
                 <tr className="border-b border-[#00F0FF]/20 bg-[#0A0A12] text-[#7A7A99] uppercase text-[10px]">
                   <th className="py-3 px-4">Tanggal & Kategori</th>
@@ -685,7 +694,8 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
               </tbody>
             </table>
           </div>
-        )}
+        </>
+      )}
       </div>
       )}
 
