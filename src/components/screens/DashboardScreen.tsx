@@ -36,6 +36,8 @@ interface DashboardScreenProps {
   onNavigateToSalary: () => void;
   onOpenReceipt: (entry: OvertimeEntry) => void;
   onUpdateSettings?: (newSettings: UserSettings) => void;
+  isPro?: boolean;
+  onOpenProModal?: () => void;
 }
 
 export const DashboardScreen: React.FC<DashboardScreenProps> = ({
@@ -50,6 +52,8 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   onNavigateToSalary,
   onOpenReceipt,
   onUpdateSettings,
+  isPro = false,
+  onOpenProModal,
 }) => {
   // Period filter states
   const [cutoffMode, setCutoffMode] = useState<'kalender' | 'cut_off_20' | 'cut_off_25' | 'custom'>('kalender');
@@ -59,7 +63,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   const [customEnd, setCustomEnd] = useState<string>('2026-11-20');
   const [rangeWarning, setRangeWarning] = useState<string | null>(null);
 
-  // Handler: Ubah Tanggal Mulai Kustom dengan Proteksi Maksimal 40 Hari
+  // Handler: Ubah Tanggal Mulai Kustom dengan Proteksi Maksimal 31 Hari
   const handleCustomStartChange = (newStart: string) => {
     setCustomStart(newStart);
     if (newStart && customEnd) {
@@ -67,10 +71,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
       const dEnd = new Date(customEnd);
       const diffDays = Math.round((dEnd.getTime() - dStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-      if (diffDays > 40) {
-        const { end } = clampCustomRange(newStart, customEnd, 40);
+      if (diffDays > 31) {
+        const { end } = clampCustomRange(newStart, customEnd, 31);
         setCustomEnd(end);
-        setRangeWarning('Rentang melebihi batas maksimal 40 hari. Tanggal akhir otomatis dibatasi.');
+        setRangeWarning('Rentang melebihi batas maksimal 31 hari. Tanggal akhir otomatis dibatasi.');
       } else if (diffDays <= 0) {
         setRangeWarning('Tanggal mulai harus lebih awal dari tanggal selesai.');
       } else {
@@ -79,17 +83,17 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     }
   };
 
-  // Handler: Ubah Tanggal Selesai Kustom dengan Proteksi Maksimal 40 Hari
+  // Handler: Ubah Tanggal Selesai Kustom dengan Proteksi Maksimal 31 Hari
   const handleCustomEndChange = (newEnd: string) => {
     if (customStart && newEnd) {
       const dStart = new Date(customStart);
       const dEnd = new Date(newEnd);
       const diffDays = Math.round((dEnd.getTime() - dStart.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-      if (diffDays > 40) {
-        const { end } = clampCustomRange(customStart, newEnd, 40);
+      if (diffDays > 31) {
+        const { end } = clampCustomRange(customStart, newEnd, 31);
         setCustomEnd(end);
-        setRangeWarning('Rentang melebihi batas maksimal 40 hari. Tanggal akhir otomatis dibatasi.');
+        setRangeWarning('Rentang melebihi batas maksimal 31 hari. Tanggal akhir otomatis dibatasi.');
       } else if (diffDays <= 0) {
         setCustomEnd(newEnd);
         setRangeWarning('Tanggal selesai harus lebih besar atau sama dengan tanggal mulai.');
@@ -273,8 +277,15 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     }
   };
 
-  // Handler: Isi Otomatis Masuk untuk seluruh hari kerja dalam periode aktif
+  // Handler: Isi Otomatis Masuk untuk seluruh hari kerja dalam periode aktif (Khusus PRO)
   const handleAutoFillMonthAttendance = () => {
+    if (!isPro) {
+      if (onOpenProModal) {
+        onOpenProModal();
+      }
+      return;
+    }
+
     const start = new Date(activeDateRange.startDate);
     const end = new Date(activeDateRange.endDate);
     const pad = (n: number) => String(n).padStart(2, '0');
@@ -298,7 +309,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
     }
   };
 
-    const handleDayBarClick = (dateStr: string) => {
+  const handleDayBarClick = (dateStr: string) => {
     setModalDate(dateStr);
     setAttendanceModalOpen(true);
   };
@@ -319,70 +330,46 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             </p>
           </div>
 
-          {/* Action Toolbar: Simetris, Rapi, Seimbang & Auto-Stretch */}
-          <div className="flex flex-col xl:flex-row items-stretch xl:items-center gap-2 w-full xl:w-auto">
-            {/* Segmented Control 50:50 Simetris: Mode Pengisian Kehadiran */}
-            <div className="flex items-center rounded-lg bg-[#0A0A12] border border-white/10 p-0.5 text-xs font-mono h-9 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => handleToggleFillMode('manual')}
-                className={`flex-1 sm:flex-none px-3 h-full rounded text-[11px] font-bold flex items-center justify-center transition-all whitespace-nowrap ${
-                  attendanceFillMode === 'manual'
-                    ? 'bg-[#1A1A2E] text-[#00F0FF] border border-[#00F0FF]/40 shadow-[0_0_8px_rgba(0,240,255,0.2)]'
-                    : 'text-[#7A7A99] hover:text-white'
-                }`}
-                title="Hanya tampilkan jam kerja hari yang Anda catat secara manual"
-              >
-                Isi Manual
-              </button>
-              <button
-                type="button"
-                onClick={() => handleToggleFillMode('otomatis')}
-                className={`flex-1 sm:flex-none px-3 h-full rounded text-[11px] font-bold flex items-center justify-center transition-all whitespace-nowrap ${
-                  attendanceFillMode === 'otomatis'
-                    ? 'bg-[#1A1A2E] text-[#39FF14] border border-[#39FF14]/40 shadow-[0_0_8px_rgba(57,255,20,0.2)]'
-                    : 'text-[#7A7A99] hover:text-white'
-                }`}
-                title="Hari kerja otomatis dianggap masuk 8 jam standar"
-              >
-                Otomatis Masuk
-              </button>
-            </div>
-
-            {/* Tombol Isi Cepat Periode Ini */}
+          {/* Action Toolbar: Rapi, Bersih, & Responsif */}
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {/* Tombol Isi Cepat Periode Ini (Khusus PRO 5K) */}
             <button
               type="button"
               onClick={handleAutoFillMonthAttendance}
-              className="h-9 px-2.5 rounded bg-[#1A1A2E] border border-[#FFE600]/30 hover:border-[#FFE600] text-[#FFE600] font-mono text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap w-full sm:w-auto"
-              title="Isi otomatis semua hari kerja periode ini yang belum tercatat absensinya"
+              className="h-9 px-3 rounded-lg bg-[#1A1A2E] border border-[#FFE600]/40 hover:border-[#FFE600] text-[#FFE600] font-mono text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shadow-[0_0_8px_rgba(255,230,0,0.15)] cursor-pointer"
+              title={isPro ? "Isi otomatis semua hari kerja periode ini yang belum tercatat absensinya" : "Fitur Otomatisasi (Isi 31 Hari Sekaligus) khusus PRO (Rp 5.000)"}
             >
               <Zap className="w-3.5 h-3.5 text-[#FFE600] shrink-0" />
               <span>Isi Periode Ini</span>
+              {!isPro && (
+                <span className="text-[9px] bg-gradient-to-r from-[#00F0FF] to-[#39FF14] text-[#0A0A12] font-black px-1.5 py-0.2 rounded ml-1">
+                  PRO
+                </span>
+              )}
             </button>
 
-            {/* Dua Tombol Aksi Utama 50:50 Simetris & Auto-Stretch */}
-            <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  setModalDate(new Date().toISOString().slice(0, 10));
-                  setAttendanceModalOpen(true);
-                }}
-                className="h-9 px-3 rounded bg-[#39FF14]/15 border border-[#39FF14]/50 hover:bg-[#39FF14]/25 text-[#39FF14] font-mono text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-[0_0_8px_rgba(57,255,20,0.15)] whitespace-nowrap"
-              >
-                <Briefcase className="w-3.5 h-3.5 shrink-0" />
-                <span>+ Catat Absensi</span>
-              </button>
+            {/* Tombol Catat Absensi Manual */}
+            <button
+              type="button"
+              onClick={() => {
+                setModalDate(new Date().toISOString().slice(0, 10));
+                setAttendanceModalOpen(true);
+              }}
+              className="h-9 px-3 rounded-lg bg-[#39FF14]/15 border border-[#39FF14]/50 hover:bg-[#39FF14]/25 text-[#39FF14] font-mono text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-[0_0_8px_rgba(57,255,20,0.15)] whitespace-nowrap cursor-pointer"
+            >
+              <Briefcase className="w-3.5 h-3.5 shrink-0" />
+              <span>+ Catat Absensi</span>
+            </button>
 
-              <button
-                type="button"
-                onClick={onNavigateToCalculator}
-                className="h-9 px-3.5 rounded bg-gradient-to-r from-[#00F0FF] to-[#0082FB] text-[#0A0A12] font-bold text-[11px] sm:text-xs font-mono hover:opacity-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.35)] flex items-center justify-center gap-1.5 whitespace-nowrap"
-              >
-                <Plus className="w-3.5 h-3.5 shrink-0" />
-                <span>Hitung Lembur</span>
-              </button>
-            </div>
+            {/* Tombol Hitung Lembur */}
+            <button
+              type="button"
+              onClick={onNavigateToCalculator}
+              className="h-9 px-3.5 rounded-lg bg-gradient-to-r from-[#00F0FF] to-[#0082FB] text-[#0A0A12] font-bold text-[11px] sm:text-xs font-mono hover:opacity-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.35)] flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5 shrink-0" />
+              <span>Hitung Lembur</span>
+            </button>
           </div>
         </div>
 
@@ -462,7 +449,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                   title="Tanggal selesai periode kustom"
                 />
                 <span className="text-[10px] text-[#00F0FF] font-mono px-2 py-0.5 rounded bg-[#00F0FF]/10 border border-[#00F0FF]/30 font-bold whitespace-nowrap">
-                  Maks. 40 Hari
+                  Maks. 31 Hari
                 </span>
               </div>
 

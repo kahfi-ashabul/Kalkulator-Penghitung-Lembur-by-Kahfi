@@ -21,7 +21,6 @@ import { OnboardingModal } from './components/modals/OnboardingModal';
 import { Footer } from './components/Footer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProModal } from './components/modals/ProModal';
-import { AdScripts } from './components/AdScripts';
 import { 
   OvertimeEntry, 
   OvertimeCalculationResult, 
@@ -300,6 +299,8 @@ function AppInner() {
             onNavigateToHistory={() => handleSelectScreen('riwayat')}
             onNavigateToSalary={() => handleSelectScreen('gaji')}
             onOpenReceipt={handleOpenReceiptFromEntry}
+            isPro={isPro}
+            onOpenProModal={() => setIsProModalOpen(true)}
           />
         )}
 
@@ -411,6 +412,11 @@ function AppInner() {
         onClose={() => setIsProfileOpen(false)}
         settings={settings}
         onSaveProfile={handleSaveSettings}
+        isPro={isPro}
+        onOpenProModal={() => {
+          setIsProfileOpen(false);
+          setIsProModalOpen(true);
+        }}
       />
 
       <SupportModal
@@ -423,9 +429,6 @@ function AppInner() {
         isOpen={isProModalOpen}
         onClose={() => setIsProModalOpen(false)}
       />
-
-      {/* Iklan kondisional — hanya untuk pengguna non-PRO */}
-      <AdScripts />
     </div>
   );
 }

@@ -320,7 +320,7 @@ export function getCutoffDateRange(
   const pad = (n: number) => String(n).padStart(2, '0');
 
   if (type === 'custom' && customStart && customEnd) {
-    const { start, end } = clampCustomRange(customStart, customEnd, 40);
+    const { start, end } = clampCustomRange(customStart, customEnd, 31);
     return {
       startDate: start,
       endDate: end,
@@ -432,12 +432,12 @@ export function getNamaHari(dateStr: string): string {
 
 
 /**
- * Helper validasi & pembatasan periode kustom maksimal 40 hari
+ * Helper validasi & pembatasan periode kustom maksimal 31 hari
  */
 export function clampCustomRange(
   startStr: string,
   endStr: string,
-  maxDays = 40
+  maxDays = 31
 ): { start: string; end: string; diffDays: number; isCapped: boolean } {
   let start = startStr;
   let end = endStr;

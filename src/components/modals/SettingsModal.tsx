@@ -38,12 +38,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClearEntries,
   onClearAttendance,
 }) => {
-  const [defaultSistem, setDefaultSistem] = useState(settings.defaultSistem);
   const [audioFeedback, setAudioFeedback] = useState(settings.audioFeedback);
   const [theme, setTheme] = useState<'dark' | 'light'>(settings.theme || 'dark');
   const [showOnboardingGuide, setShowOnboardingGuide] = useState(settings.showOnboardingGuide ?? true);
   const [enableMaxOvertimeAlert, setEnableMaxOvertimeAlert] = useState(settings.enableMaxOvertimeAlert ?? true);
-  const [modeAbsensi, setModeAbsensi] = useState<'manual' | 'otomatis'>(settings.modeAbsensi || 'manual');
   
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [showConfirmClearEntries, setShowConfirmClearEntries] = useState(false);
@@ -52,12 +50,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   // Sync state dari settings setiap kali modal dibuka
   useEffect(() => {
     if (isOpen) {
-      setDefaultSistem(settings.defaultSistem);
       setAudioFeedback(settings.audioFeedback);
       setTheme(settings.theme || 'dark');
       setShowOnboardingGuide(settings.showOnboardingGuide ?? true);
       setEnableMaxOvertimeAlert(settings.enableMaxOvertimeAlert ?? true);
-      setModeAbsensi(settings.modeAbsensi || 'manual');
       setShowConfirmReset(false);
       setShowConfirmClearEntries(false);
       setShowConfirmClearAttendance(false);
@@ -68,12 +64,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     if (onResetAllData) {
       onResetAllData();
     }
-    setDefaultSistem(defaultSettings.defaultSistem);
     setAudioFeedback(defaultSettings.audioFeedback);
     setTheme(defaultSettings.theme || 'dark');
     setShowOnboardingGuide(defaultSettings.showOnboardingGuide ?? true);
     setEnableMaxOvertimeAlert(defaultSettings.enableMaxOvertimeAlert ?? true);
-    setModeAbsensi(defaultSettings.modeAbsensi || 'manual');
     setShowConfirmReset(false);
     onClose();
   };
@@ -84,12 +78,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     e.preventDefault();
     onSaveSettings({
       ...settings,
-      defaultSistem,
       audioFeedback,
       theme,
       showOnboardingGuide,
       enableMaxOvertimeAlert,
-      modeAbsensi,
     });
     onClose();
   };
@@ -147,32 +139,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <span>Mode Terang</span>
               </button>
             </div>
-          </div>
-
-          {/* Sistem Kerja */}
-          <div>
-            <label className="text-[#b9cacb] mb-1 block font-bold">Sistem Hari Kerja Standar Perusahaan</label>
-            <select
-              value={defaultSistem}
-              onChange={(e) => setDefaultSistem(e.target.value as any)}
-              className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white focus:outline-none focus:border-[#00F0FF]"
-            >
-              <option value="5_hari">5 Hari Kerja (8 Jam/hari, 40 Jam/minggu - Libur Sabtu & Minggu)</option>
-              <option value="6_hari">6 Hari Kerja (7 Jam/hari Sen-Jum, 5 Jam Sabtu - Libur Minggu)</option>
-            </select>
-          </div>
-
-          {/* Mode Pengisian Absensi */}
-          <div>
-            <label className="text-[#b9cacb] mb-1 block font-bold">Mode Pengisian Absensi Kehadiran</label>
-            <select
-              value={modeAbsensi}
-              onChange={(e) => setModeAbsensi(e.target.value as any)}
-              className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white focus:outline-none focus:border-[#00F0FF]"
-            >
-              <option value="manual">Manual Masuk (Hanya tampilkan hari yang Anda catat kehadiran)</option>
-              <option value="otomatis">Otomatis Masuk (Semua hari kerja otomatis dihitung hadir normal)</option>
-            </select>
           </div>
 
           {/* Preferences Toggles */}

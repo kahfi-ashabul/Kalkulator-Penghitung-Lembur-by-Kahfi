@@ -12,7 +12,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) =
   const handleDownloadQRIS = () => {
     const link = document.createElement('a');
     link.href = '/qris.jpg';
-    link.download = 'qris-support-kahfi.jpg';
+    link.download = 'qris-support-kei-project.jpg';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -29,9 +29,9 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) =
             </div>
             <div>
               <h3 className="font-bold text-white text-base font-heading flex items-center gap-1.5">
-                Support Me <Sparkles className="w-3.5 h-3.5 text-[#FFE600]" />
+                Support Kei <Sparkles className="w-3.5 h-3.5 text-[#FFE600]" />
               </h3>
-              <p className="text-[10px] text-[#b9cacb] font-mono">Dukungan & Donasi untuk Kahfi</p>
+              <p className="text-[10px] text-[#b9cacb] font-mono">Dukungan & Donasi untuk Kei Project</p>
             </div>
           </div>
           <button
@@ -45,7 +45,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) =
         {/* Content Body */}
         <div className="p-5 overflow-y-auto space-y-4 text-xs font-mono text-center">
           <p className="text-[11px] text-[#b9cacb] font-sans leading-relaxed">
-            Terima kasih banyak telah menggunakan <strong>Kalkulator Penghitung Lembur</strong>! Dukungan atau traktiran kopi Anda sangat berarti untuk kelangsungan pengembangan aplikasi ini.
+            Terima kasih banyak telah menggunakan <strong>Kalkulator Lembur by Kei Project</strong>! Dukungan atau traktiran kopi Anda sangat berarti untuk kelangsungan server dan pengembangan fitur aplikasi ini.
           </p>
 
           {/* QRIS Image Container */}

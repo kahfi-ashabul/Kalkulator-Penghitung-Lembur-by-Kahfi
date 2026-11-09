@@ -6,9 +6,13 @@ import {
   DollarSign, 
   Save, 
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Briefcase,
+  Clock,
+  Crown,
+  Lock
 } from 'lucide-react';
-import { UserSettings } from '../../types/overtime';
+import { UserSettings, SistemKerja } from '../../types/overtime';
 import { parseRupiah } from '../../utils/calculations';
 
 interface ProfileModalProps {
@@ -16,6 +20,8 @@ interface ProfileModalProps {
   onClose: () => void;
   settings: UserSettings;
   onSaveProfile: (updatedSettings: UserSettings) => void;
+  isPro?: boolean;
+  onOpenProModal?: () => void;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -23,11 +29,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   onClose,
   settings,
   onSaveProfile,
+  isPro = false,
+  onOpenProModal,
 }) => {
   const [namaKaryawan, setNamaKaryawan] = useState(settings.namaKaryawan || '');
   const [namaPerusahaan, setNamaPerusahaan] = useState(settings.namaPerusahaan || '');
   const [defaultGajiPokok, setDefaultGajiPokok] = useState(settings.defaultGajiPokok || 0);
   const [defaultTunjangan, setDefaultTunjangan] = useState(settings.defaultTunjangan || 0);
+  const [defaultSistem, setDefaultSistem] = useState<SistemKerja>(settings.defaultSistem || '5_hari');
+  const [modeAbsensi, setModeAbsensi] = useState<'manual' | 'otomatis'>(settings.modeAbsensi || 'manual');
+  
   const [gajiPokokStr, setGajiPokokStr] = useState<string>(
     settings.defaultGajiPokok ? settings.defaultGajiPokok.toLocaleString('id-ID') : ''
   );
@@ -44,12 +55,24 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       const tj = settings.defaultTunjangan || 0;
       setDefaultGajiPokok(gp);
       setDefaultTunjangan(tj);
+      setDefaultSistem(settings.defaultSistem || '5_hari');
+      setModeAbsensi(settings.modeAbsensi || 'manual');
       setGajiPokokStr(gp > 0 ? gp.toLocaleString('id-ID') : '');
       setTunjanganStr(tj > 0 ? tj.toLocaleString('id-ID') : '');
     }
   }, [isOpen, settings]);
 
   if (!isOpen) return null;
+
+  const handleSelectModeAbsensi = (mode: 'manual' | 'otomatis') => {
+    if (mode === 'otomatis' && !isPro) {
+      if (onOpenProModal) {
+        onOpenProModal();
+      }
+      return;
+    }
+    setModeAbsensi(mode);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,34 +82,36 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
       namaPerusahaan: namaPerusahaan.trim() || 'PT Teknologi Nusantara Mandiri',
       defaultGajiPokok,
       defaultTunjangan,
+      defaultSistem,
+      modeAbsensi,
     });
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-[#12121F] border border-[#00F0FF]/30 rounded-lg shadow-2xl text-[#E4E1ED] overflow-hidden max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg bg-[#12121F] border border-[#00F0FF]/30 rounded-xl shadow-2xl text-[#E4E1ED] overflow-hidden max-h-[92vh] flex flex-col">
         {/* Header Modal Profil */}
         <div className="flex items-center justify-between p-4 border-b border-[#00F0FF]/20 bg-[#0A0A12]">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-[#00F0FF]/15 border border-[#00F0FF]/40 flex items-center justify-center text-[#00F0FF]">
+            <div className="w-8 h-8 rounded-lg bg-[#00F0FF]/15 border border-[#00F0FF]/40 flex items-center justify-center text-[#00F0FF]">
               <User className="w-4 h-4" />
             </div>
             <div>
               <h3 className="font-bold text-white text-base">Profil Karyawan</h3>
-              <p className="text-[10px] text-[#b9cacb] font-mono">Identitas kerja & standar upah baku</p>
+              <p className="text-[10px] text-[#b9cacb] font-mono">Identitas kerja, sistem kerja, & standar upah baku</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded text-[#7A7A99] hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-[#7A7A99] hover:text-white hover:bg-white/10 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Profil */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 text-xs font-mono overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 text-xs font-mono overflow-y-auto flex-1">
           {/* Identitas Karyawan */}
           <div className="space-y-3">
             <div>
@@ -121,6 +146,102 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 required
               />
             </div>
+          </div>
+
+          {/* Sistem Hari Kerja Standar Perusahaan */}
+          <div className="pt-2 border-t border-white/10 space-y-2">
+            <label className="text-white font-bold flex items-center gap-1.5">
+              <Briefcase className="w-3.5 h-3.5 text-[#00F0FF]" />
+              Sistem Hari Kerja Standar Perusahaan
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setDefaultSistem('5_hari')}
+                className={`p-2.5 rounded-lg border text-left transition-all ${
+                  defaultSistem === '5_hari'
+                    ? 'bg-[#1A1A2E] border-[#00F0FF] text-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
+                    : 'bg-[#161626] border-white/10 text-[#7A7A99] hover:text-white'
+                }`}
+              >
+                <div className="font-bold text-xs text-white">5 Hari Kerja</div>
+                <div className="text-[10px] text-[#b9cacb] mt-0.5">8 jam/hari (Senin - Jumat)</div>
+                <div className="text-[9px] text-[#7A7A99]">Libur: Sabtu & Minggu</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDefaultSistem('6_hari')}
+                className={`p-2.5 rounded-lg border text-left transition-all ${
+                  defaultSistem === '6_hari'
+                    ? 'bg-[#1A1A2E] border-[#00F0FF] text-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
+                    : 'bg-[#161626] border-white/10 text-[#7A7A99] hover:text-white'
+                }`}
+              >
+                <div className="font-bold text-xs text-white">6 Hari Kerja</div>
+                <div className="text-[10px] text-[#b9cacb] mt-0.5">7 jam/hari (Sabtu 5 jam)</div>
+                <div className="text-[9px] text-[#7A7A99]">Libur: Minggu saja</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Mode Pengisian Absensi Kehadiran */}
+          <div className="pt-2 border-t border-white/10 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-white font-bold flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#39FF14]" />
+                Mode Pengisian Absensi Kehadiran
+              </label>
+              {!isPro && (
+                <span className="text-[10px] text-[#FFE600] font-bold flex items-center gap-1">
+                  <Crown className="w-3 h-3 text-[#FFE600]" /> PRO Feature
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleSelectModeAbsensi('manual')}
+                className={`p-2.5 rounded-lg border text-left transition-all ${
+                  modeAbsensi === 'manual'
+                    ? 'bg-[#1A1A2E] border-[#00F0FF] text-[#00F0FF] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
+                    : 'bg-[#161626] border-white/10 text-[#7A7A99] hover:text-white'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-white">Isi Manual</span>
+                  <span className="text-[9px] bg-white/10 px-1.5 py-0.2 rounded text-[#b9cacb]">Semua Akun</span>
+                </div>
+                <div className="text-[10px] text-[#b9cacb] mt-1">
+                  Catat kehadiran satu per satu per hari secara manual via kalender / tombol Catat Absensi.
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleSelectModeAbsensi('otomatis')}
+                className={`p-2.5 rounded-lg border text-left transition-all relative ${
+                  modeAbsensi === 'otomatis'
+                    ? 'bg-[#1A1A2E] border-[#39FF14] text-[#39FF14] shadow-[0_0_10px_rgba(57,255,20,0.2)]'
+                    : 'bg-[#161626] border-white/10 text-[#7A7A99] hover:text-white'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-xs text-white">Otomatis Masuk</span>
+                  <span className="text-[9px] bg-gradient-to-r from-[#00F0FF] to-[#39FF14] text-[#0A0A12] font-black px-1.5 py-0.2 rounded flex items-center gap-0.5">
+                    {isPro ? 'PRO' : <><Lock className="w-2.5 h-2.5" /> PRO 5K</>}
+                  </span>
+                </div>
+                <div className="text-[10px] text-[#b9cacb] mt-1">
+                  Hari kerja otomatis dianggap hadir normal (8j / 7j) tanpa perlu diisi satu per satu.
+                </div>
+              </button>
+            </div>
+            {!isPro && modeAbsensi === 'manual' && (
+              <p className="text-[10px] text-[#7A7A99]">
+                💡 Akun Gratis hanya mendukung <strong>Isi Manual</strong>. Upgrade ke <strong>PRO (Rp 5.000)</strong> untuk mengaktifkan Otomatis Masuk & Isi Periode Sekaligus.
+              </p>
+            )}
           </div>
 
           {/* Standar Komponen Gaji Karyawan */}
@@ -184,7 +305,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-2.5 rounded bg-gradient-to-r from-[#00F0FF] to-[#0082FB] text-[#0A0A12] font-bold text-xs font-mono hover:opacity-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded bg-gradient-to-r from-[#00F0FF] to-[#0082FB] text-[#0A0A12] font-bold text-xs font-mono hover:opacity-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-2 cursor-pointer"
             >
               <Save className="w-4 h-4" />
               <span>Simpan Profil Karyawan</span>
