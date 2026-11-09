@@ -37,8 +37,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return res.status(200).send('OK (User ID missing)');
   }
 
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || 'https://ohljgtdhcexspfzgpict.supabase.co';
-  const supabaseServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9obGpndGRoY2V4c3BmemdwaWN0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5NDE0ODY1NCwiZXhwIjoyMTA5NzI0NjU0fQ.2wjlyF1aHaMs5CULt4eNP8TQQtEVYh8VYSJkwoE4EZo';
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseServiceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceRole) {
+    console.error('Environment variables for Supabase are not configured');
+    return res.status(500).send('Server misconfiguration');
+  }
 
   const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRole);
 

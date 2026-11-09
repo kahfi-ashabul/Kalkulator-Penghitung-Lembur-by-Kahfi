@@ -65,8 +65,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     },
     {
       num: '5',
-      title: 'Ekspor Slip Struk PNG, CSV Excel & Cadangan JSON',
-      desc: 'Unduh slip lembur PNG siap kirim WhatsApp, ekspor rekapitulasi lembur dan absensi lengkap ke CSV Excel, serta cadangkan & pulihkan seluruh data dengan file JSON.',
+      title: 'Ekspor Slip Struk PNG & Cadangan JSON',
+      desc: 'Unduh slip lembur dan gaji dalam format gambar PNG resolusi tinggi siap kirim, serta cadangkan & pulihkan seluruh data dengan berkas JSON.',
       icon: <FileSpreadsheet className="w-4 h-4 text-[#00F0FF]" />,
     },
     {

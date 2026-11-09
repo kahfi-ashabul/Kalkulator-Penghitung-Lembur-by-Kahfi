@@ -23,9 +23,14 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return res.status(400).json({ error: 'Parameter tidak lengkap (plan, userId, email wajib diisi)' });
   }
 
-  const clientId = process.env.DOKU_CLIENT_ID || 'BRN-0235-1794176848448';
-  const secretKey = process.env.DOKU_SECRET_KEY || 'SK-8dhVykiMtt83hTM6mPTG';
+  const clientId = process.env.DOKU_CLIENT_ID;
+  const secretKey = process.env.DOKU_SECRET_KEY;
   const isProduction = process.env.DOKU_IS_PRODUCTION !== 'false';
+
+  if (!clientId || !secretKey) {
+    console.error('DOKU credentials missing in environment variables');
+    return res.status(500).json({ error: 'Konfigurasi DOKU gateway belum lengkap di server.' });
+  }
 
   const amount = plan === 'yearly' ? 45000 : 5000;
   const planName = plan === 'yearly' ? 'Kei Pro - Paket Tahunan (365 Hari)' : 'Kei Pro - Paket Bulanan (30 Hari)';

@@ -66,7 +66,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
         </div>
 
         <div className="text-center text-[10px] text-[#7A7A99] pt-2">
-          Estimasi mandiri, bukan dokumen resmi pemerintah atau nasihat hukum legal. Dibuat dengan presisi oleh Kahfi.
+          Estimasi mandiri, bukan dokumen resmi pemerintah atau nasihat hukum legal. Dibuat dengan presisi oleh Kei Project.
         </div>
       </div>
     </footer>

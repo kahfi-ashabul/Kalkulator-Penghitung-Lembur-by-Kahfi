@@ -160,17 +160,9 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleExportCSV = () => {
-    if (settings.audioFeedback) playCyberClick();
-    const prefix = activeDateRange 
-      ? `lembur-${activeDateRange.startDate}-sd-${activeDateRange.endDate}` 
-      : 'riwayat-lembur-semua';
-    exportToCSV(filteredEntries, attendanceMap, prefix);
-  };
-
   const handleExportJSON = () => {
     if (settings.audioFeedback) playCyberClick();
-    exportToJSON(filteredEntries, attendanceMap, 'backup-lembur-kahfi');
+    exportToJSON(filteredEntries, attendanceMap, 'backup-lembur-keipro');
   };
 
   const handleConfirmClearAll = () => {
@@ -200,7 +192,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
               </span>
             </div>
             <p className="text-xs text-[#b9cacb] mt-1 font-sans">
-              Semua data tersimpan aman di browser Anda. Ekspor ke CSV Excel atau pulihkan dari cadangan JSON.
+              Semua data tersimpan aman di browser Anda. Cadangkan dan pulihkan riwayat dengan berkas JSON.
             </p>
           </div>
 
@@ -245,18 +237,8 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
 
               <button
                 type="button"
-                onClick={handleExportCSV}
-                className="h-8.5 px-1.5 sm:px-2.5 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#00F0FF] text-white hover:text-[#00F0FF] text-[10px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap"
-                title="Unduh file CSV Excel lengkap"
-              >
-                <FileText className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
-                <span>Ekspor CSV</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={handleExportJSON}
-                className="h-8.5 px-1.5 sm:px-2.5 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#FF2BD6] text-white hover:text-[#FF2BD6] text-[10px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap"
+                className="h-8.5 px-2.5 sm:px-3 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#FF2BD6] text-white hover:text-[#FF2BD6] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm"
                 title="Backup berkas JSON lengkap"
               >
                 <FileCode className="w-3.5 h-3.5 text-[#FF2BD6] shrink-0" />

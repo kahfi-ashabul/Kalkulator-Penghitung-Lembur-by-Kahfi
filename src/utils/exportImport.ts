@@ -25,7 +25,7 @@ export const CSV_HEADERS = [
 export function exportToCSV(
   entries: OvertimeEntry[],
   attendanceMap?: Record<string, AttendanceRecord>,
-  filenamePrefix = 'laporan-lembur-kahfi'
+  filenamePrefix = 'laporan-lembur-keipro'
 ): void {
   // Gabungkan entri lembur dan rekapan kehadiran per tanggal
   const dateMap = new Map<string, { entry?: OvertimeEntry; attendance?: AttendanceRecord }>();
@@ -174,11 +174,11 @@ export function exportToCSV(
 export function exportToJSON(
   entries: OvertimeEntry[],
   attendanceMap?: Record<string, AttendanceRecord>,
-  filenamePrefix = 'backup-lembur-kahfi'
+  filenamePrefix = 'backup-lembur-keipro'
 ): void {
   const backupData = {
     versiSkema: '1.2',
-    namaAplikasi: 'Kalkulator Penghitung Lembur by Kahfi',
+    namaAplikasi: 'Kalkulator Lembur by Kei Project',
     waktuEkspor: new Date().toISOString(),
     totalEntri: entries.length,
     totalKehadiran: attendanceMap ? Object.keys(attendanceMap).length : 0,

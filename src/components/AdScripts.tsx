@@ -16,7 +16,7 @@ export function AdScripts() {
       return;
     }
 
-    // 2. Terapkan jeda 30 detik sebelum iklan pertama kali dimuat
+    // 2. Terapkan jeda 10 detik sebelum iklan pertama kali dimuat
     const timer = setTimeout(() => {
       // Periksa ulang sebelum menyuntikkan script ke DOM
       if (isPro) return;
@@ -40,7 +40,7 @@ export function AdScripts() {
 
       // Social Bar
       addScript('https://bicea.org/14/b8c9323ac23aacba04b95fa515119375');
-    }, 30000); // 30 detik delay
+    }, 10000); // 10 detik delay
 
     // Cleanup: jika user login atau status PRO aktif dalam 30 detik, batalkan timer
     return () => {
