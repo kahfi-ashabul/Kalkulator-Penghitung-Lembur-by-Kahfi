@@ -6,9 +6,10 @@ const SETTINGS_KEY = 'lembur_settings_v1.1';
 const ATTENDANCE_KEY = 'kehadiran_records_v1.1';
 
 export const defaultSettings: UserSettings = {
-  namaKaryawan: 'Karyawan',
-  namaPerusahaan: 'Perusahaan',
+  namaKaryawan: '',
+  namaPerusahaan: '',
   defaultSistem: '5_hari',
+  modeGaji: 'bulanan',
   defaultGajiPokok: 6000000,
   defaultTunjangan: 0,
   defaultUpahHarian: 250000,
@@ -18,6 +19,7 @@ export const defaultSettings: UserSettings = {
   enableMaxOvertimeAlert: true,
   defaultCutoffDay: 1, // 1 = kalender, 21 = cut-off 21-20, 26 = cut-off 26-25
   modeAbsensi: 'manual', // 'manual' = hanya tampilkan hari yang dicatat, 'otomatis' = hari kerja otomatis masuk 8j
+  profileCompleted: false,
 };
 
 // Pure blank initial entries (0 data bawaan - pengguna mengisi dari awal)

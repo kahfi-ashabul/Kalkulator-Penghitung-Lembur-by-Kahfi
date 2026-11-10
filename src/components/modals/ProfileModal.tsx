@@ -22,6 +22,7 @@ interface ProfileModalProps {
   onSaveProfile: (updatedSettings: UserSettings) => void;
   isPro?: boolean;
   onOpenProModal?: () => void;
+  isMandatory?: boolean;
 }
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({
@@ -31,11 +32,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   onSaveProfile,
   isPro = false,
   onOpenProModal,
+  isMandatory = false,
 }) => {
   const [namaKaryawan, setNamaKaryawan] = useState(settings.namaKaryawan || '');
   const [namaPerusahaan, setNamaPerusahaan] = useState(settings.namaPerusahaan || '');
+  const [modeGaji, setModeGaji] = useState<'bulanan' | 'harian'>(settings.modeGaji || 'bulanan');
   const [defaultGajiPokok, setDefaultGajiPokok] = useState(settings.defaultGajiPokok || 0);
   const [defaultTunjangan, setDefaultTunjangan] = useState(settings.defaultTunjangan || 0);
+  const [defaultUpahHarian, setDefaultUpahHarian] = useState(settings.defaultUpahHarian || 250000);
   const [defaultSistem, setDefaultSistem] = useState<SistemKerja>(settings.defaultSistem || '5_hari');
   const [modeAbsensi, setModeAbsensi] = useState<'manual' | 'otomatis'>(settings.modeAbsensi || 'manual');
   
@@ -45,20 +49,27 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [tunjanganStr, setTunjanganStr] = useState<string>(
     settings.defaultTunjangan ? settings.defaultTunjangan.toLocaleString('id-ID') : ''
   );
+  const [upahHarianStr, setUpahHarianStr] = useState<string>(
+    settings.defaultUpahHarian ? settings.defaultUpahHarian.toLocaleString('id-ID') : '250.000'
+  );
 
   // Sync state dari settings setiap kali modal dibuka
   useEffect(() => {
     if (isOpen) {
       setNamaKaryawan(settings.namaKaryawan || '');
       setNamaPerusahaan(settings.namaPerusahaan || '');
+      setModeGaji(settings.modeGaji || 'bulanan');
       const gp = settings.defaultGajiPokok || 0;
       const tj = settings.defaultTunjangan || 0;
+      const uh = settings.defaultUpahHarian || 250000;
       setDefaultGajiPokok(gp);
       setDefaultTunjangan(tj);
+      setDefaultUpahHarian(uh);
       setDefaultSistem(settings.defaultSistem || '5_hari');
       setModeAbsensi(settings.modeAbsensi || 'manual');
       setGajiPokokStr(gp > 0 ? gp.toLocaleString('id-ID') : '');
       setTunjanganStr(tj > 0 ? tj.toLocaleString('id-ID') : '');
+      setUpahHarianStr(uh > 0 ? uh.toLocaleString('id-ID') : '250.000');
     }
   }, [isOpen, settings]);
 
@@ -78,12 +89,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     e.preventDefault();
     onSaveProfile({
       ...settings,
-      namaKaryawan: namaKaryawan.trim() || 'M. Kahfi',
-      namaPerusahaan: namaPerusahaan.trim() || 'PT Teknologi Nusantara Mandiri',
+      namaKaryawan: namaKaryawan.trim() || 'Karyawan',
+      namaPerusahaan: namaPerusahaan.trim() || 'Perusahaan',
+      modeGaji,
       defaultGajiPokok,
       defaultTunjangan,
+      defaultUpahHarian,
       defaultSistem,
       modeAbsensi,
+      profileCompleted: true,
     });
     onClose();
   };
@@ -98,17 +112,33 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
               <User className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-white text-base">Profil Karyawan</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-white text-base">Profil Karyawan</h3>
+                {isMandatory && (
+                  <span className="text-[10px] bg-[#FFE600]/20 text-[#FFE600] border border-[#FFE600]/40 px-1.5 py-0.5 rounded font-mono font-bold">
+                    Wajib Diisi di Awal
+                  </span>
+                )}
+              </div>
               <p className="text-[10px] text-[#b9cacb] font-mono">Identitas kerja, sistem kerja, & standar upah baku</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg text-[#7A7A99] hover:text-white hover:bg-white/10 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {!isMandatory && (
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-[#7A7A99] hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
+
+        {isMandatory && (
+          <div className="px-4 py-2 bg-[#FFE600]/10 border-b border-[#FFE600]/20 text-[#FFE600] text-[11px] font-mono flex items-center gap-2">
+            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            <span>Lengkapi data Profil Karyawan Anda untuk memastikan perhitungan upah dan slip lembur akurat.</span>
+          </div>
+        )}
 
         {/* Form Profil */}
         <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4 text-xs font-mono overflow-y-auto flex-1">
@@ -185,6 +215,43 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </div>
           </div>
 
+          {/* Mode Sistem Penggajian */}
+          <div className="pt-2 border-t border-white/10 space-y-2">
+            <label className="text-white font-bold flex items-center gap-1.5">
+              <DollarSign className="w-3.5 h-3.5 text-[#FFE600]" />
+              Mode Sistem Penggajian
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setModeGaji('bulanan')}
+                className={`p-2.5 rounded-lg border text-left transition-all ${
+                  modeGaji === 'bulanan'
+                    ? 'bg-[#1A1A2E] border-[#FFE600] text-[#FFE600] shadow-[0_0_10px_rgba(255,230,0,0.2)]'
+                    : 'bg-[#161626] border-white/10 text-[#7A7A99] hover:text-white'
+                }`}
+              >
+                <div className="font-bold text-xs text-white">Gaji Bulanan</div>
+                <div className="text-[10px] text-[#b9cacb] mt-0.5">Gaji pokok tetap per bulan</div>
+                <div className="text-[9px] text-[#7A7A99]">Dasar lembur: 1/173 × Upah</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setModeGaji('harian')}
+                className={`p-2.5 rounded-lg border text-left transition-all ${
+                  modeGaji === 'harian'
+                    ? 'bg-[#1A1A2E] border-[#FFE600] text-[#FFE600] shadow-[0_0_10px_rgba(255,230,0,0.2)]'
+                    : 'bg-[#161626] border-white/10 text-[#7A7A99] hover:text-white'
+                }`}
+              >
+                <div className="font-bold text-xs text-white">Gaji Harian</div>
+                <div className="text-[10px] text-[#b9cacb] mt-0.5">Upah dihitung per hari kerja</div>
+                <div className="text-[9px] text-[#7A7A99]">Dasar lembur: PP 35/2021 (21x / 25x)</div>
+              </button>
+            </div>
+          </div>
+
           {/* Mode Pengisian Absensi Kehadiran */}
           <div className="pt-2 border-t border-white/10 space-y-2">
             <div className="flex items-center justify-between">
@@ -248,30 +315,54 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
           <div className="pt-2 border-t border-white/10 space-y-3">
             <div className="flex items-center gap-1.5 text-white font-bold">
               <DollarSign className="w-3.5 h-3.5 text-[#39FF14]" />
-              <span>Standar Komponen Gaji Bawaan</span>
+              <span>Standar Komponen Gaji Bawaan ({modeGaji === 'harian' ? 'Mode Harian' : 'Mode Bulanan'})</span>
             </div>
 
-            <div>
-              <label className="text-[#b9cacb] mb-1 block">Gaji Pokok Bulanan (Rp)</label>
-              <div className="relative">
-                <span className="absolute left-3 top-2.5 text-xs font-mono text-[#7A7A99]">Rp</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={gajiPokokStr}
-                  onChange={(e) => {
-                    const raw = parseRupiah(e.target.value);
-                    setDefaultGajiPokok(raw);
-                    setGajiPokokStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
-                  }}
-                  className="w-full pl-10 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono focus:outline-none focus:border-[#39FF14]"
-                  placeholder="0"
-                />
+            {modeGaji === 'bulanan' ? (
+              <div>
+                <label className="text-[#b9cacb] mb-1 block">Gaji Pokok Bulanan (Rp)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-xs font-mono text-[#7A7A99]">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={gajiPokokStr}
+                    onChange={(e) => {
+                      const raw = parseRupiah(e.target.value);
+                      setDefaultGajiPokok(raw);
+                      setGajiPokokStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                    }}
+                    className="w-full pl-10 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono focus:outline-none focus:border-[#39FF14]"
+                    placeholder="0"
+                  />
+                </div>
+                <span className="text-[10px] text-[#7A7A99] mt-0.5 block">
+                  Upah 1 jam lembur dihitung 1/173 × (Gaji Pokok + Tunjangan Tetap).
+                </span>
               </div>
-              <span className="text-[10px] text-[#7A7A99] mt-0.5 block">
-                Upah 1 jam lembur dihitung 1/173 × (Gaji Pokok + Tunjangan Tetap). Bebas masukkan nominal berapapun.
-              </span>
-            </div>
+            ) : (
+              <div>
+                <label className="text-[#b9cacb] mb-1 block">Upah Harian Pokok (Rp/hari)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-xs font-mono text-[#7A7A99]">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={upahHarianStr}
+                    onChange={(e) => {
+                      const raw = parseRupiah(e.target.value);
+                      setDefaultUpahHarian(raw);
+                      setUpahHarianStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                    }}
+                    className="w-full pl-10 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono focus:outline-none focus:border-[#FFE600]"
+                    placeholder="250.000"
+                  />
+                </div>
+                <span className="text-[10px] text-[#7A7A99] mt-0.5 block">
+                  Sesuai PP 35/2021 Pasal 32: Upah sebulan dihitung {defaultSistem === '6_hari' ? '25' : '21'} × upah sehari. Upah 1 jam lembur = upah sebulan / 173.
+                </span>
+              </div>
+            )}
 
             <div>
               <label className="text-[#b9cacb] mb-1 block">Tunjangan Tetap (Rp)</label>

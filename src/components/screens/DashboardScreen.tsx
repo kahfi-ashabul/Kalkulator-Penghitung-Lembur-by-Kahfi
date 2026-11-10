@@ -23,6 +23,7 @@ import {
 import { OvertimeEntry, UserSettings, AttendanceRecord, AttendanceStatus } from '../../types/overtime';
 import { formatRupiah, formatTanggal, formatJam, getCutoffDateRange , clampCustomRange} from '../../utils/calculations';
 import { AttendanceModal } from '../modals/AttendanceModal';
+import { triggerPopunder } from '../../utils/adManager';
 
 interface DashboardScreenProps {
   entries: OvertimeEntry[];
@@ -352,6 +353,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             <button
               type="button"
               onClick={() => {
+                triggerPopunder(isPro);
                 setModalDate(new Date().toISOString().slice(0, 10));
                 setAttendanceModalOpen(true);
               }}
@@ -364,7 +366,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
             {/* Tombol Hitung Lembur */}
             <button
               type="button"
-              onClick={onNavigateToCalculator}
+              onClick={() => {
+                triggerPopunder(isPro);
+                onNavigateToCalculator();
+              }}
               className="h-9 px-3.5 rounded-lg bg-gradient-to-r from-[#00F0FF] to-[#0082FB] text-[#0A0A12] font-bold text-[11px] sm:text-xs font-mono hover:opacity-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.35)] flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5 shrink-0" />
@@ -921,8 +926,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               </p>
             </div>
             <button
-              onClick={onNavigateToHistory}
-              className="text-xs font-mono text-[#00F0FF] hover:underline flex items-center gap-1"
+              onClick={() => {
+                triggerPopunder(isPro);
+                onNavigateToHistory();
+              }}
+              className="text-xs font-mono text-[#00F0FF] hover:underline flex items-center gap-1 cursor-pointer"
             >
               Buka Riwayat Lengkap ({entries.length}) <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -936,8 +944,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
                 Gunakan tombol di bawah untuk menghitung lembur baru (baik aturan PP 35/2021 maupun tarif manual perusahaan).
               </p>
               <button
-                onClick={onNavigateToCalculator}
-                className="mt-4 px-4 py-2 rounded bg-[#00F0FF] text-[#0A0A12] font-bold text-xs font-mono hover:bg-[#7df4ff] transition-all"
+                onClick={() => {
+                  triggerPopunder(isPro);
+                  onNavigateToCalculator();
+                }}
+                className="mt-4 px-4 py-2 rounded bg-[#00F0FF] text-[#0A0A12] font-bold text-xs font-mono hover:bg-[#7df4ff] transition-all cursor-pointer"
               >
                 + Hitung Lembur Sekarang
               </button>
@@ -1042,8 +1053,11 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
 
           <div className="mt-4 pt-4 border-t border-white/10 text-center">
             <button
-              onClick={onNavigateToSalary}
-              className="w-full py-2.5 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#00F0FF] text-white text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5"
+              onClick={() => {
+                triggerPopunder(isPro);
+                onNavigateToSalary();
+              }}
+              className="w-full py-2.5 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#00F0FF] text-white text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               Simulasi Slip Gaji Periode Ini <ChevronRight className="w-3.5 h-3.5 text-[#00F0FF]" />
             </button>

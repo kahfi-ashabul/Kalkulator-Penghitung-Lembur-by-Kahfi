@@ -15,6 +15,7 @@ import {
   Cloud
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { triggerPopunder } from '../utils/adManager';
 
 export type ScreenType = 'dashboard' | 'kalkulator' | 'gaji' | 'riwayat';
 
@@ -48,6 +49,11 @@ export const Navigation: React.FC<NavigationProps> = ({
   namaKaryawan,
 }) => {
   const { user, isPro, countdown } = useAuth();
+  const handleNavClick = (screen: ScreenType) => {
+    triggerPopunder(isPro);
+    onSelectScreen(screen);
+  };
+
   const navItems: Array<{ id: ScreenType; label: string; icon: React.ReactNode }> = [
     {
       id: 'dashboard',
@@ -78,7 +84,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
           {/* Brand Logo & Title: Kei Pro */}
           <div
-            onClick={() => onSelectScreen('dashboard')}
+            onClick={() => handleNavClick('dashboard')}
             className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group select-none shrink-0"
           >
             <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#161626] border border-[#00F0FF]/40 shadow-[0_0_12px_rgba(0,240,255,0.3)] group-hover:border-[#00F0FF] transition-all shrink-0 p-1">
@@ -108,7 +114,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   key={item.id}
                   role="tab"
                   aria-selected={isActive}
-                  onClick={() => onSelectScreen(item.id)}
+                  onClick={() => handleNavClick(item.id)}
                   className={`relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-md text-xs font-semibold transition-all select-none ${
                     isActive
                       ? 'bg-[#1A1A2E] text-[#00F0FF] shadow-[0_0_12px_rgba(0,240,255,0.25)] border border-[#00F0FF]/40'
@@ -240,7 +246,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                 key={item.id}
                 role="tab"
                 aria-selected={isActive}
-                onClick={() => onSelectScreen(item.id)}
+                onClick={() => handleNavClick(item.id)}
                 className={`relative flex flex-col items-center justify-center py-1.5 px-3 rounded-lg text-[10px] font-mono transition-all ${
                   isActive ? 'text-[#00F0FF]' : 'text-[#7A7A99] hover:text-white'
                 }`}

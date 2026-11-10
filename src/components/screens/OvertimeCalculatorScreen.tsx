@@ -28,6 +28,8 @@ import {
 } from '../../types/overtime';
 import { calculateOvertime, formatRupiah, formatJam, parseRupiah, formatTanggal, detectAutoDayType, getNamaHari } from '../../utils/calculations';
 import { playCyberClick, playCyberSuccess } from '../../utils/audio';
+import { useAuth } from '../../context/AuthContext';
+import { triggerPopunder } from '../../utils/adManager';
 
 
 interface OvertimeCalculatorScreenProps {
@@ -43,6 +45,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
   onOpenReceipt,
   onOpenLegal,
 }) => {
+  const { isPro } = useAuth();
   // Input states
   const [tanggal, setTanggal] = useState<string>(new Date().toISOString().slice(0, 10));
   const [gajiPokok, setGajiPokok] = useState<number>(settings.defaultGajiPokok || 6000000);
@@ -195,12 +198,14 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
       upahHarianPokok: modeHitung === 'manual_incentive' ? upahHarianPokok : undefined,
     };
 
+    triggerPopunder(isPro);
     onSaveEntry(newEntry);
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
   const handleCopySummary = () => {
+    triggerPopunder(isPro);
     if (settings.audioFeedback) playCyberClick();
     const isCustom = modeHitung !== 'pp35';
     const modeBadge = isCustom 
@@ -236,6 +241,7 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
   };
 
   const handleShareWhatsApp = () => {
+    triggerPopunder(isPro);
     const jenisHariLabel = (jenisHari === 'libur' || jenisHari === 'sabtu' || jenisHari === 'minggu')
       ? 'HARI LIBUR / ISTIRAHAT'
       : 'HARI KERJA BIASA';
@@ -1023,9 +1029,12 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
             </button>
 
             <button
-              onClick={() => onOpenReceipt(calcResult, tanggal, catatan)}
+              onClick={() => {
+                triggerPopunder(isPro);
+                onOpenReceipt(calcResult, tanggal, catatan);
+              }}
               disabled={calcResult.totalUpahLembur <= 0}
-              className="py-2.5 px-3 rounded font-bold text-white bg-gradient-to-r from-[#FF2BD6] to-[#7928CA] hover:opacity-95 transition-all shadow-[0_0_12px_rgba(255,43,214,0.35)] flex items-center justify-center gap-1.5"
+              className="py-2.5 px-3 rounded font-bold text-white bg-gradient-to-r from-[#FF2BD6] to-[#7928CA] hover:opacity-95 transition-all shadow-[0_0_12px_rgba(255,43,214,0.35)] flex items-center justify-center gap-1.5 cursor-pointer disabled:cursor-not-allowed"
             >
               <Share2 className="w-4 h-4" />
               <span>Slip PNG</span>

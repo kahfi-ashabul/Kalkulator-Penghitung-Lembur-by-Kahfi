@@ -78,10 +78,12 @@ function AppInner() {
     }
   }, [settings.theme]);
 
-  // Check onboarding guide on mount
+  // Check mandatory profile setup or onboarding guide on mount
   useEffect(() => {
     const loadedSettings = getStoredSettings();
-    if (loadedSettings.showOnboardingGuide !== false) {
+    if (!loadedSettings.profileCompleted) {
+      setIsProfileOpen(true);
+    } else if (loadedSettings.showOnboardingGuide !== false) {
       setIsOnboardingOpen(true);
     }
   }, []);
@@ -368,6 +370,7 @@ function AppInner() {
           setReceiptData(null);
         }}
         data={receiptData}
+        appTheme={settings.theme}
         defaultNama={settings.namaKaryawan}
         defaultPerusahaan={settings.namaPerusahaan}
       />
@@ -409,9 +412,21 @@ function AppInner() {
 
       <ProfileModal
         isOpen={isProfileOpen}
-        onClose={() => setIsProfileOpen(false)}
+        onClose={() => {
+          if (settings.profileCompleted) {
+            setIsProfileOpen(false);
+          }
+        }}
+        isMandatory={!settings.profileCompleted}
         settings={settings}
-        onSaveProfile={handleSaveSettings}
+        onSaveProfile={(updated) => {
+          handleSaveSettings(updated);
+          setIsProfileOpen(false);
+          if (updated.showOnboardingGuide !== false && !sessionStorage.getItem('onboarding_shown')) {
+            sessionStorage.setItem('onboarding_shown', 'true');
+            setIsOnboardingOpen(true);
+          }
+        }}
         isPro={isPro}
         onOpenProModal={() => {
           setIsProfileOpen(false);

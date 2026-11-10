@@ -9,27 +9,30 @@ interface ReceiptModalProps {
   data: OvertimeCalculationResult | OvertimeEntry | null;
   defaultNama?: string;
   defaultPerusahaan?: string;
+  appTheme?: 'dark' | 'light';
 }
 
 export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   isOpen,
   onClose,
   data,
-  defaultNama = 'M. Kahfi',
-  defaultPerusahaan = 'PT Teknologi Nusantara Mandiri',
+  defaultNama = 'Karyawan',
+  defaultPerusahaan = 'Perusahaan',
+  appTheme = 'dark',
 }) => {
-  const [theme, setTheme] = useState<'cyber' | 'white'>('cyber');
+  const [theme, setTheme] = useState<'cyber' | 'white'>(appTheme === 'light' ? 'white' : 'cyber');
   const [namaKaryawan, setNamaKaryawan] = useState(defaultNama);
   const [namaPerusahaan, setNamaPerusahaan] = useState(defaultPerusahaan);
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
-  // Re-sync nama dan perusahaan dari pengaturan setiap kali modal dibuka atau props berubah
+  // Re-sync nama, perusahaan, dan tema dari pengaturan setiap kali modal dibuka atau props berubah
   useEffect(() => {
     if (isOpen) {
-      setNamaKaryawan(defaultNama || 'M. Kahfi');
-      setNamaPerusahaan(defaultPerusahaan || 'PT Teknologi Nusantara Mandiri');
+      setTheme(appTheme === 'light' ? 'white' : 'cyber');
+      setNamaKaryawan(defaultNama || 'Karyawan');
+      setNamaPerusahaan(defaultPerusahaan || 'Perusahaan');
     }
-  }, [isOpen, defaultNama, defaultPerusahaan]);
+  }, [isOpen, appTheme, defaultNama, defaultPerusahaan]);
 
   useEffect(() => {
     if (isOpen && data) {

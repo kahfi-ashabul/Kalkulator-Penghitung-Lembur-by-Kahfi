@@ -66,6 +66,7 @@ export interface UserSettings {
   namaKaryawan: string;
   namaPerusahaan: string;
   defaultSistem: SistemKerja;
+  modeGaji?: 'bulanan' | 'harian';
   defaultGajiPokok: number;
   defaultTunjangan: number;
   defaultUpahHarian?: number;
@@ -75,6 +76,7 @@ export interface UserSettings {
   enableMaxOvertimeAlert?: boolean;
   defaultCutoffDay?: number; // e.g. 21, 26, 1
   modeAbsensi?: 'otomatis' | 'manual';
+  profileCompleted?: boolean;
 }
 
 export interface DateRangeFilter {

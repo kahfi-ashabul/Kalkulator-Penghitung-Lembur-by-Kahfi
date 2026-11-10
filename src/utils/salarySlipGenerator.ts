@@ -5,6 +5,7 @@ export interface SalarySlipData {
   namaPerusahaan: string;
   periode: string;
   tanggalCetak: string;
+  theme?: 'light' | 'dark';
   gajiPokok: number;
   tunjanganTetap: number;
   totalUangLembur: number;
@@ -19,8 +20,10 @@ export interface SalarySlipData {
 
 /**
  * Generate high-resolution (2x retina) PNG Slip Gaji using HTML5 Canvas API
+ * Mendukung Tema Terang (Light Mode) dan Tema Gelap Cyber (Dark Mode)
  */
 export function generateSalarySlipCanvas(data: SalarySlipData): HTMLCanvasElement {
+  const isLight = data.theme === 'light';
   const width = 800;
   const height = 1050;
 
@@ -32,89 +35,150 @@ export function generateSalarySlipCanvas(data: SalarySlipData): HTMLCanvasElemen
 
   ctx.scale(2, 2);
 
-  // Background Dark Cyber Luxury
-  const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-  bgGrad.addColorStop(0, '#0A0A14');
-  bgGrad.addColorStop(0.5, '#121224');
-  bgGrad.addColorStop(1, '#0D0D1A');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, width, height);
+  // Background Canvas
+  if (isLight) {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, width, height);
 
-  // Subtle grid lines
-  ctx.strokeStyle = 'rgba(0, 240, 255, 0.03)';
-  ctx.lineWidth = 1;
-  for (let x = 0; x < width; x += 40) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-    ctx.stroke();
+    // Subtle light grid lines
+    ctx.strokeStyle = '#F1F5F9';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < width; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < height; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    // Outer border
+    ctx.strokeStyle = '#CBD5E1';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(20, 20, width - 40, height - 40);
+
+    // Top Header Banner
+    ctx.fillStyle = '#F8FAFC';
+    ctx.fillRect(20, 20, width - 40, 110);
+    ctx.strokeStyle = '#E2E8F0';
+    ctx.strokeRect(20, 20, width - 40, 110);
+
+    // Brand Name
+    ctx.fillStyle = '#0284C7';
+    ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+    ctx.fillText('SLIP GAJI KARYAWAN', 44, 62);
+
+    ctx.fillStyle = '#64748B';
+    ctx.font = '12px system-ui, -apple-system, sans-serif';
+    ctx.fillText('Standar Kepatuhan Ketenagakerjaan PP No. 35 Tahun 2021', 44, 82);
+
+    // Kei Pro Tag
+    ctx.fillStyle = '#16A34A';
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText('● ENGINE BY KEI PROJECT', 44, 104);
+
+    // Periode Badge (Right side)
+    ctx.fillStyle = '#F0F9FF';
+    ctx.fillRect(width - 240, 42, 200, 64);
+    ctx.strokeStyle = '#BAE6FD';
+    ctx.strokeRect(width - 240, 42, 200, 64);
+
+    ctx.fillStyle = '#0369A1';
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText('PERIODE ESTIMASI', width - 225, 62);
+
+    ctx.fillStyle = '#0F172A';
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillText(data.periode || 'Bulan Berjalan', width - 225, 84);
+  } else {
+    // Dark Cyber Luxury
+    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+    bgGrad.addColorStop(0, '#0A0A14');
+    bgGrad.addColorStop(0.5, '#121224');
+    bgGrad.addColorStop(1, '#0D0D1A');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    // Subtle dark neon grid lines
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.03)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < width; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < height; y += 40) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    // Outer border with neon glow
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(20, 20, width - 40, height - 40);
+
+    // Top Header Banner
+    ctx.fillStyle = 'rgba(22, 22, 38, 0.9)';
+    ctx.fillRect(20, 20, width - 40, 110);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.strokeRect(20, 20, width - 40, 110);
+
+    // Brand Name
+    ctx.fillStyle = '#00F0FF';
+    ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+    ctx.fillText('SLIP GAJI KARYAWAN', 44, 62);
+
+    ctx.fillStyle = '#A0A0C0';
+    ctx.font = '12px system-ui, -apple-system, sans-serif';
+    ctx.fillText('Standar Kepatuhan Ketenagakerjaan PP No. 35 Tahun 2021', 44, 82);
+
+    // Kei Pro Tag
+    ctx.fillStyle = '#16A34A';
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText('● ENGINE BY KEI PROJECT', 44, 104);
+
+    // Periode Badge (Right side)
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.12)';
+    ctx.fillRect(width - 240, 42, 200, 64);
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
+    ctx.strokeRect(width - 240, 42, 200, 64);
+
+    ctx.fillStyle = '#00F0FF';
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText('PERIODE ESTIMASI', width - 225, 62);
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 13px system-ui, sans-serif';
+    ctx.fillText(data.periode || 'Bulan Berjalan', width - 225, 84);
   }
-  for (let y = 0; y < height; y += 40) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
-  }
-
-  // Outer border with neon glow
-  ctx.strokeStyle = 'rgba(0, 240, 255, 0.35)';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(20, 20, width - 40, height - 40);
-
-  // Top Header Banner
-  ctx.fillStyle = 'rgba(22, 22, 38, 0.9)';
-  ctx.fillRect(20, 20, width - 40, 110);
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-  ctx.strokeRect(20, 20, width - 40, 110);
-
-  // Brand Name
-  ctx.fillStyle = '#00F0FF';
-  ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
-  ctx.fillText('SLIP GAJI KARYAWAN', 44, 62);
-
-  ctx.fillStyle = '#A0A0C0';
-  ctx.font = '12px system-ui, -apple-system, sans-serif';
-  ctx.fillText('Standar Kepatuhan Ketenagakerjaan PP No. 35 Tahun 2021', 44, 82);
-
-  // Kei Pro Tag
-  ctx.fillStyle = '#16A34A';
-  ctx.font = 'bold 11px monospace';
-  ctx.fillText('● ENGINE BY KEI PROJECT', 44, 104);
-
-  // Periode Badge (Right side)
-  ctx.fillStyle = 'rgba(0, 240, 255, 0.12)';
-  ctx.fillRect(width - 240, 42, 200, 64);
-  ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
-  ctx.strokeRect(width - 240, 42, 200, 64);
-
-  ctx.fillStyle = '#00F0FF';
-  ctx.font = 'bold 11px monospace';
-  ctx.fillText('PERIODE ESTIMASI', width - 225, 62);
-
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 13px system-ui, sans-serif';
-  ctx.fillText(data.periode || 'Bulan Berjalan', width - 225, 84);
 
   // Identity Card Section
   let curY = 155;
-  ctx.fillStyle = 'rgba(26, 26, 46, 0.6)';
+  ctx.fillStyle = isLight ? '#F8FAFC' : 'rgba(26, 26, 46, 0.6)';
   ctx.fillRect(36, curY, width - 72, 70);
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.strokeStyle = isLight ? '#E2E8F0' : 'rgba(255, 255, 255, 0.08)';
   ctx.strokeRect(36, curY, width - 72, 70);
 
-  ctx.fillStyle = '#7A7A99';
+  ctx.fillStyle = isLight ? '#64748B' : '#7A7A99';
   ctx.font = '11px monospace';
   ctx.fillText('NAMA KARYAWAN', 52, curY + 26);
   ctx.fillText('PERUSAHAAN / KANTOR', 420, curY + 26);
 
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = isLight ? '#0F172A' : '#FFFFFF';
   ctx.font = 'bold 15px system-ui, sans-serif';
   ctx.fillText(data.namaKaryawan || 'Karyawan', 52, curY + 50);
   ctx.fillText(data.namaPerusahaan || 'Perusahaan', 420, curY + 50);
 
   // Section 1: PENERIMAAN (EARNINGS)
   curY = 250;
-  ctx.fillStyle = '#39FF14';
+  ctx.fillStyle = isLight ? '#15803D' : '#39FF14';
   ctx.font = 'bold 13px monospace';
   ctx.fillText('[A] KOMPONEN PENERIMAAN (PENDAPATAN KOTOR)', 36, curY);
 
@@ -140,23 +204,23 @@ export function generateSalarySlipCanvas(data: SalarySlipData): HTMLCanvasElemen
     totalGross += item.val;
     curY += 24;
 
-    ctx.fillStyle = '#E4E1ED';
+    ctx.fillStyle = isLight ? '#1E293B' : '#E4E1ED';
     ctx.font = '12px system-ui, sans-serif';
     ctx.fillText(item.label, 44, curY);
 
-    ctx.fillStyle = '#39FF14';
+    ctx.fillStyle = isLight ? '#15803D' : '#39FF14';
     ctx.font = 'bold 12px monospace';
     ctx.textAlign = 'right';
     ctx.fillText(formatRupiah(item.val), width - 44, curY);
     ctx.textAlign = 'left';
 
     curY += 14;
-    ctx.fillStyle = '#64748B';
+    ctx.fillStyle = isLight ? '#94A3B8' : '#64748B';
     ctx.font = '10px system-ui, sans-serif';
     ctx.fillText(item.sub || '', 44, curY);
 
     curY += 6;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = isLight ? '#F1F5F9' : 'rgba(255, 255, 255, 0.05)';
     ctx.beginPath();
     ctx.moveTo(44, curY);
     ctx.lineTo(width - 44, curY);
@@ -165,19 +229,19 @@ export function generateSalarySlipCanvas(data: SalarySlipData): HTMLCanvasElemen
 
   // Gross Subtotal Row
   curY += 18;
-  ctx.fillStyle = 'rgba(57, 255, 20, 0.08)';
+  ctx.fillStyle = isLight ? '#DCFCE7' : 'rgba(57, 255, 20, 0.08)';
   ctx.fillRect(36, curY - 14, width - 72, 28);
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = isLight ? '#0F172A' : '#FFFFFF';
   ctx.font = 'bold 12px monospace';
   ctx.fillText('SUBTOTAL PENDAPATAN KOTOR (GROSS)', 44, curY + 4);
-  ctx.fillStyle = '#39FF14';
+  ctx.fillStyle = isLight ? '#15803D' : '#39FF14';
   ctx.textAlign = 'right';
   ctx.fillText(formatRupiah(totalGross), width - 44, curY + 4);
   ctx.textAlign = 'left';
 
   // Section 2: POTONGAN (DEDUCTIONS)
   curY += 40;
-  ctx.fillStyle = '#FF2BD6';
+  ctx.fillStyle = isLight ? '#BE185D' : '#FF2BD6';
   ctx.font = 'bold 13px monospace';
   ctx.fillText('[B] KOMPONEN POTONGAN', 36, curY);
 
@@ -188,18 +252,18 @@ export function generateSalarySlipCanvas(data: SalarySlipData): HTMLCanvasElemen
 
   deductions.forEach((item) => {
     curY += 18;
-    ctx.fillStyle = '#E4E1ED';
+    ctx.fillStyle = isLight ? '#1E293B' : '#E4E1ED';
     ctx.font = '12px system-ui, sans-serif';
     ctx.fillText(item.nama, 44, curY);
 
-    ctx.fillStyle = '#FF2BD6';
+    ctx.fillStyle = isLight ? '#E11D48' : '#FF2BD6';
     ctx.font = 'bold 12px monospace';
     ctx.textAlign = 'right';
     ctx.fillText(`- ${formatRupiah(item.nominal)}`, width - 44, curY);
     ctx.textAlign = 'left';
 
     curY += 8;
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = isLight ? '#F1F5F9' : 'rgba(255, 255, 255, 0.05)';
     ctx.beginPath();
     ctx.moveTo(44, curY);
     ctx.lineTo(width - 44, curY);
@@ -208,12 +272,12 @@ export function generateSalarySlipCanvas(data: SalarySlipData): HTMLCanvasElemen
 
   // Deductions Subtotal Row
   curY += 18;
-  ctx.fillStyle = 'rgba(255, 43, 214, 0.08)';
+  ctx.fillStyle = isLight ? '#FFE4E6' : 'rgba(255, 43, 214, 0.08)';
   ctx.fillRect(36, curY - 14, width - 72, 28);
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = isLight ? '#0F172A' : '#FFFFFF';
   ctx.font = 'bold 12px monospace';
   ctx.fillText('SUBTOTAL POTONGAN', 44, curY + 4);
-  ctx.fillStyle = '#FF2BD6';
+  ctx.fillStyle = isLight ? '#BE185D' : '#FF2BD6';
   ctx.textAlign = 'right';
   ctx.fillText(`- ${formatRupiah(data.totalPotongan)}`, width - 44, curY + 4);
   ctx.textAlign = 'left';
@@ -221,33 +285,55 @@ export function generateSalarySlipCanvas(data: SalarySlipData): HTMLCanvasElemen
   // Section 3: TAKE HOME PAY (NET) HERO
   curY += 45;
   const heroH = 80;
-  const netGrad = ctx.createLinearGradient(36, curY, width - 36, curY + heroH);
-  netGrad.addColorStop(0, '#102A1E');
-  netGrad.addColorStop(1, '#0A1E14');
-  ctx.fillStyle = netGrad;
-  ctx.fillRect(36, curY, width - 72, heroH);
+  if (isLight) {
+    ctx.fillStyle = '#ECFDF5';
+    ctx.fillRect(36, curY, width - 72, heroH);
+    ctx.strokeStyle = '#10B981';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(36, curY, width - 72, heroH);
 
-  ctx.strokeStyle = '#39FF14';
-  ctx.lineWidth = 1.5;
-  ctx.strokeRect(36, curY, width - 72, heroH);
+    ctx.fillStyle = '#047857';
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText('GAJI BERSIH DITERIMA (TAKE HOME PAY / NET)', 52, curY + 28);
 
-  ctx.fillStyle = '#7A7A99';
-  ctx.font = 'bold 11px monospace';
-  ctx.fillText('GAJI BERSIH DITERIMA (TAKE HOME PAY / NET)', 52, curY + 28);
+    ctx.fillStyle = '#64748B';
+    ctx.font = '10px system-ui, sans-serif';
+    ctx.fillText('Rumus: Pendapatan Kotor (A) - Total Potongan (B)', 52, curY + 54);
 
-  ctx.fillStyle = '#A0A0C0';
-  ctx.font = '10px system-ui, sans-serif';
-  ctx.fillText('Rumus: Pendapatan Kotor (A) - Total Potongan (B)', 52, curY + 54);
+    ctx.fillStyle = '#059669';
+    ctx.font = 'bold 26px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(formatRupiah(data.takeHomePay), width - 52, curY + 48);
+    ctx.textAlign = 'left';
+  } else {
+    const netGrad = ctx.createLinearGradient(36, curY, width - 36, curY + heroH);
+    netGrad.addColorStop(0, '#102A1E');
+    netGrad.addColorStop(1, '#0A1E14');
+    ctx.fillStyle = netGrad;
+    ctx.fillRect(36, curY, width - 72, heroH);
 
-  ctx.fillStyle = '#39FF14';
-  ctx.font = 'bold 26px monospace';
-  ctx.textAlign = 'right';
-  ctx.fillText(formatRupiah(data.takeHomePay), width - 52, curY + 48);
-  ctx.textAlign = 'left';
+    ctx.strokeStyle = '#39FF14';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(36, curY, width - 72, heroH);
+
+    ctx.fillStyle = '#7A7A99';
+    ctx.font = 'bold 11px monospace';
+    ctx.fillText('GAJI BERSIH DITERIMA (TAKE HOME PAY / NET)', 52, curY + 28);
+
+    ctx.fillStyle = '#A0A0C0';
+    ctx.font = '10px system-ui, sans-serif';
+    ctx.fillText('Rumus: Pendapatan Kotor (A) - Total Potongan (B)', 52, curY + 54);
+
+    ctx.fillStyle = '#39FF14';
+    ctx.font = 'bold 26px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(formatRupiah(data.takeHomePay), width - 52, curY + 48);
+    ctx.textAlign = 'left';
+  }
 
   // Footer & Disclaimer
   curY += heroH + 35;
-  ctx.fillStyle = '#64748B';
+  ctx.fillStyle = isLight ? '#64748B' : '#64748B';
   ctx.font = '10px system-ui, sans-serif';
   ctx.fillText(
     `Dokumen digital ini dihasilkan secara otomatis oleh Kalkulator Lembur by Kei Project (${data.tanggalCetak}).`,

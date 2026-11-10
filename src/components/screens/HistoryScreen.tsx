@@ -30,6 +30,8 @@ import {
 } from '../../utils/calculations';
 import { exportToCSV, exportToJSON } from '../../utils/exportImport';
 import { playCyberClick, playCyberSuccess } from '../../utils/audio';
+import { useAuth } from '../../context/AuthContext';
+import { triggerPopunder } from '../../utils/adManager';
 
 interface HistoryScreenProps {
   entries: OvertimeEntry[];
@@ -58,6 +60,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   onOpenAttendanceModal,
   onDeleteAttendance,
 }) => {
+  const { isPro } = useAuth();
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterJenisHari, setFilterJenisHari] = useState<string>('all');
@@ -205,30 +208,36 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
             <div className="grid grid-cols-2 gap-2 w-full">
               <button
                 type="button"
-                onClick={() => onOpenAttendanceModal?.()}
-                className="h-9 px-3 rounded bg-[#39FF14]/15 border border-[#39FF14]/50 hover:bg-[#39FF14]/25 text-[#39FF14] font-bold text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1.5 shadow-[0_0_10px_rgba(57,255,20,0.15)] whitespace-nowrap"
+                onClick={() => {
+                  triggerPopunder(isPro);
+                  onOpenAttendanceModal?.();
+                }}
+                className="h-9 px-3 rounded bg-[#39FF14]/15 border border-[#39FF14]/50 hover:bg-[#39FF14]/25 text-[#39FF14] font-bold text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1.5 shadow-[0_0_10px_rgba(57,255,20,0.15)] whitespace-nowrap cursor-pointer"
                 title="Catat absensi masuk, sakit, izin, atau cuti"
               >
                 <Briefcase className="w-3.5 h-3.5 shrink-0" />
-                <span>+ Catat Kehadiran</span>
+                <span>Catat Kehadiran</span>
               </button>
 
               <button
                 type="button"
-                onClick={onNavigateToCalculator}
-                className="h-9 px-3 rounded bg-gradient-to-r from-[#00F0FF] to-[#0082FB] text-[#0A0A12] font-bold text-[11px] sm:text-xs font-mono hover:opacity-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-1.5 whitespace-nowrap"
+                onClick={() => {
+                  triggerPopunder(isPro);
+                  onNavigateToCalculator();
+                }}
+                className="h-9 px-3 rounded bg-gradient-to-r from-[#00F0FF] to-[#0082FB] text-[#0A0A12] font-bold text-[11px] sm:text-xs font-mono hover:opacity-95 transition-all shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5 shrink-0" />
-                <span>+ Hitung Lembur</span>
+                <span>Hitung Lembur</span>
               </button>
             </div>
 
-            {/* Baris 2: Tombol Kelola Berkas (3 Kolom Simetris Ter-stretch) */}
-            <div className="grid grid-cols-3 gap-2 w-full">
+            {/* Baris 2: Tombol Kelola Berkas (2 Kolom Simetris Ter-stretch) */}
+            <div className="grid grid-cols-2 gap-2 w-full">
               <button
                 type="button"
                 onClick={onOpenImportModal}
-                className="h-8.5 px-2 sm:px-2.5 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#00F0FF] text-white hover:text-[#00F0FF] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap"
+                className="h-8.5 px-2.5 sm:px-3 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#00F0FF] text-white hover:text-[#00F0FF] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
                 title="Pulihkan data lembur dan catatan absensi dari berkas .JSON"
               >
                 <Upload className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
@@ -238,7 +247,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
               <button
                 type="button"
                 onClick={handleExportJSON}
-                className="h-8.5 px-2.5 sm:px-3 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#FF2BD6] text-white hover:text-[#FF2BD6] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm"
+                className="h-8.5 px-2.5 sm:px-3 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#FF2BD6] text-white hover:text-[#FF2BD6] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm cursor-pointer"
                 title="Backup berkas JSON lengkap"
               >
                 <FileCode className="w-3.5 h-3.5 text-[#FF2BD6] shrink-0" />
@@ -642,8 +651,11 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
                     <td className="py-3 px-4 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <button
-                          onClick={() => onOpenReceipt(item)}
-                          className="p-1.5 rounded bg-[#1A1A2E] border border-white/10 hover:border-[#00F0FF] text-[#00F0FF] transition-all"
+                          onClick={() => {
+                            triggerPopunder(isPro);
+                            onOpenReceipt(item);
+                          }}
+                          className="p-1.5 rounded bg-[#1A1A2E] border border-white/10 hover:border-[#00F0FF] text-[#00F0FF] transition-all cursor-pointer"
                           title="Ekspor Bukti Slip PNG"
                         >
                           <Share2 className="w-3.5 h-3.5" />

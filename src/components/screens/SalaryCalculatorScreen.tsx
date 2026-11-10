@@ -23,6 +23,8 @@ import { OvertimeEntry, UserSettings, Deductions, AttendanceRecord } from '../..
 import { formatRupiah, parseRupiah, getCutoffDateRange } from '../../utils/calculations';
 import { playCyberClick, playCyberSuccess } from '../../utils/audio';
 import { downloadSalarySlipPNG } from '../../utils/salarySlipGenerator';
+import { useAuth } from '../../context/AuthContext';
+import { triggerPopunder } from '../../utils/adManager';
 
 interface SalaryCalculatorScreenProps {
   entries: OvertimeEntry[];
@@ -35,7 +37,8 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   settings,
   attendanceMap = {},
 }) => {
-  const [mode, setMode] = useState<'bulanan' | 'harian'>('bulanan');
+  const { isPro } = useAuth();
+  const [mode, setMode] = useState<'bulanan' | 'harian'>(settings.modeGaji || 'bulanan');
 
   // Month and Cut-off selector for pulling stored overtime
   const [cutoffMode, setCutoffMode] = useState<'kalender' | 'cut_off_20' | 'cut_off_25' | 'custom'>('kalender');
@@ -47,12 +50,15 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
 
   // Sinkronkan default settings ke form gaji saat diubah di Pengaturan tanpa refresh
   useEffect(() => {
+    if (settings.modeGaji) {
+      setMode(settings.modeGaji);
+    }
     setGajiPokok(settings.defaultGajiPokok || 6000000);
     setGajiPokokStr((settings.defaultGajiPokok || 6000000).toLocaleString('id-ID'));
     setTunjanganTetap(settings.defaultTunjangan || 0);
     setTunjanganTetapStr((settings.defaultTunjangan || 0).toLocaleString('id-ID'));
     setPembagiHari(settings.defaultSistem === '6_hari' ? 25 : 21);
-  }, [settings.defaultGajiPokok, settings.defaultTunjangan, settings.defaultSistem]);
+  }, [settings.modeGaji, settings.defaultGajiPokok, settings.defaultTunjangan, settings.defaultSistem]);
 
   // Bulanan inputs
   const [gajiPokok, setGajiPokok] = useState<number>(settings.defaultGajiPokok || 6000000);
@@ -202,6 +208,7 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   };
 
   const handleCopySummary = () => {
+    triggerPopunder(isPro);
     if (settings.audioFeedback) playCyberClick();
     const slip = generateSlipText();
     navigator.clipboard.writeText(slip);
@@ -214,6 +221,7 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   };
 
   const handleShareSlip = async () => {
+    triggerPopunder(isPro);
     if (settings.audioFeedback) playCyberSuccess();
     const slip = generateSlipText();
     const title = `Slip Gaji ${settings.namaKaryawan || 'Karyawan'} - ${activeDateRange.label}`;
@@ -241,6 +249,7 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   };
 
   const handleDirectWhatsApp = () => {
+    triggerPopunder(isPro);
     if (settings.audioFeedback) playCyberClick();
     const slip = generateSlipText();
     const encoded = encodeURIComponent(slip);
@@ -250,12 +259,14 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   };
 
   const handleDownloadSalarySlip = () => {
+    triggerPopunder(isPro);
     if (settings.audioFeedback) playCyberSuccess();
     downloadSalarySlipPNG({
       namaKaryawan: settings.namaKaryawan || 'Karyawan',
       namaPerusahaan: settings.namaPerusahaan || 'Kei Project',
       periode: activeDateRange.label,
       tanggalCetak: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+      theme: settings.theme || 'dark',
       gajiPokok: mode === 'bulanan' ? gajiPokok : pendapatanHarianTotal,
       tunjanganTetap: mode === 'bulanan' ? tunjanganTetap : 0,
       totalUangLembur: activeOvertimeAmount,
