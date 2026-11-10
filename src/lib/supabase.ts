@@ -1,8 +1,12 @@
 import { createClient, SupabaseClient, User, Session } from '@supabase/supabase-js';
 import { UserProfile } from '../types/auth';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Kunci publik Supabase untuk otentikasi Google OAuth & Sinkronisasi Cloud
+const defaultSupabaseUrl = 'https://ohljgtdhcexspfzgpict.supabase.co';
+const defaultSupabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9obGpndGRoY2V4c3BmemdwaWN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNDg2NTQsImV4cCI6MjEwOTcyNDY1NH0.CvHIdWRBA2xOrt-o_xpi4D4C91Qo27NxUxzZZZCI0Xc';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || defaultSupabaseUrl;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || defaultSupabaseAnonKey;
 
 export const isSupabaseConfigured = Boolean(
   supabaseUrl &&
@@ -12,8 +16,8 @@ export const isSupabaseConfigured = Boolean(
 
 // Fallback aman agar aplikasi tidak crash saat VITE_SUPABASE_URL belum diatur
 export const supabase: SupabaseClient = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-anon-key',
+  supabaseUrl,
+  supabaseAnonKey,
   {
     auth: {
       persistSession: true,

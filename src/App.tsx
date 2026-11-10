@@ -78,13 +78,13 @@ function AppInner() {
     }
   }, [settings.theme]);
 
-  // Check mandatory profile setup or onboarding guide on mount
+  // Urutan awal: Tampilkan Panduan Penggunaan DULU, baru kemudian Profil Karyawan
   useEffect(() => {
     const loadedSettings = getStoredSettings();
-    if (!loadedSettings.profileCompleted) {
-      setIsProfileOpen(true);
-    } else if (loadedSettings.showOnboardingGuide !== false) {
+    if (loadedSettings.showOnboardingGuide !== false) {
       setIsOnboardingOpen(true);
+    } else if (!loadedSettings.profileCompleted) {
+      setIsProfileOpen(true);
     }
   }, []);
 
@@ -345,10 +345,17 @@ function AppInner() {
         onOpenLegal={() => setIsLegalOpen(true)}
       />
 
-      {/* Onboarding Guide Modal */}
+      {/* Onboarding Guide Modal (Tahap 1: Tampil Pertama Kali) */}
       <OnboardingModal
         isOpen={isOnboardingOpen}
-        onClose={() => setIsOnboardingOpen(false)}
+        onClose={() => {
+          setIsOnboardingOpen(false);
+          // Setelah Panduan ditutup, jika Profil belum lengkap, wajibkan buka Profil Karyawan (Tahap 2)
+          const currentSettings = getStoredSettings();
+          if (!currentSettings.profileCompleted) {
+            setIsProfileOpen(true);
+          }
+        }}
         onDontShowAgain={(dontShow) => {
           handleSaveSettings({
             ...settings,
@@ -422,10 +429,6 @@ function AppInner() {
         onSaveProfile={(updated) => {
           handleSaveSettings(updated);
           setIsProfileOpen(false);
-          if (updated.showOnboardingGuide !== false && !sessionStorage.getItem('onboarding_shown')) {
-            sessionStorage.setItem('onboarding_shown', 'true');
-            setIsOnboardingOpen(true);
-          }
         }}
         isPro={isPro}
         onOpenProModal={() => {
