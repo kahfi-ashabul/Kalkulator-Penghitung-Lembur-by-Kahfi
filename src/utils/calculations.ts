@@ -21,6 +21,7 @@ export function calculateOvertime(params: {
   modeHitung?: OvertimeCalculationMode;
   manualRatePerJam?: number;
   manualTotalNominal?: number;
+  customTierRates?: number[];
   upahHarianPokok?: number;
 }): OvertimeCalculationResult {
   const {
@@ -34,6 +35,7 @@ export function calculateOvertime(params: {
     modeHitung = 'pp35',
     manualRatePerJam = 0,
     manualTotalNominal = 0,
+    customTierRates,
     upahHarianPokok = 0,
   } = params;
 
@@ -41,40 +43,82 @@ export function calculateOvertime(params: {
   const upahSejamPP35Raw = upahSebulan > 0 ? upahSebulan / 173 : 0;
   const upahSejamPP35 = Math.round(upahSejamPP35Raw);
 
-  // KASUS A: Mode Insentif Mandiri (Upah Harian Sendiri + Lembur/Insentif Sendiri)
+  // KASUS A: Mode Bertingkat Mandiri (Jam ke-1, Jam ke-2, Jam ke-3 dst nominal berbeda)
   if (modeHitung === 'manual_incentive') {
     const dailyBase = Math.max(0, upahHarianPokok || 0);
-    // Bisa berupa tarif per jam atau nominal tetap borongan per shift
-    const overtimeRate = manualRatePerJam > 0 ? manualRatePerJam : (manualTotalNominal || 0);
-    const overtimeTotal = manualRatePerJam > 0 ? Math.round(jamLembur * manualRatePerJam) : (manualTotalNominal || 0);
+    const tiers = (customTierRates && customTierRates.length > 0)
+      ? customTierRates
+      : [manualRatePerJam > 0 ? manualRatePerJam : 30000];
 
-    const breakdown: HourlyMultiplier[] = [
-      {
-        hourIndex: 1,
+    const breakdown: HourlyMultiplier[] = [];
+    let remaining = jamLembur;
+    let idx = 1;
+    let overtimeTotal = 0;
+
+    while (remaining > 0) {
+      const frac = remaining >= 1 ? 1 : remaining;
+      // Ambil tarif jam ke-idx; jika melebihi panjang tier, pakai tier jam terakhir
+      const rateForHour = tiers[Math.min(idx - 1, tiers.length - 1)] || 0;
+      const subtotal = Math.round(frac * rateForHour);
+      overtimeTotal += subtotal;
+
+      breakdown.push({
+        hourIndex: idx,
         multiplier: 1,
-        hoursCount: jamLembur,
-        hourlyRate: manualRatePerJam > 0 ? manualRatePerJam : overtimeTotal,
-        subtotal: overtimeTotal,
-        description: manualRatePerJam > 0
-          ? `Insentif Lembur: ${formatJam(jamLembur)} × ${formatRupiah(manualRatePerJam)}/jam`
-          : `Insentif Lembur Tetap/Shift (${formatJam(jamLembur)})`,
-      },
-    ];
+        hoursCount: frac,
+        hourlyRate: rateForHour,
+        subtotal,
+        description: `Jam ke-${idx}: ${formatJam(frac)} × ${formatRupiah(rateForHour)}/jam`,
+      });
+
+      remaining = Math.max(0, remaining - frac);
+      idx++;
+    }
+
+    const averageHourly = jamLembur > 0 ? Math.round(overtimeTotal / jamLembur) : 0;
 
     return {
       upahSebulan,
-      upahSejam: manualRatePerJam > 0 ? manualRatePerJam : (jamLembur > 0 ? Math.round(overtimeTotal / jamLembur) : 0),
+      upahSejam: averageHourly,
       jamLembur,
       totalUpahLembur: overtimeTotal,
       breakdown,
-      formula: `Mode Insentif Mandiri: Gaji Harian ${formatRupiah(dailyBase)} + Lembur ${formatRupiah(overtimeTotal)}`,
+      formula: dailyBase > 0
+        ? `Bertingkat Mandiri: Gaji Harian ${formatRupiah(dailyBase)} + Lembur ${formatRupiah(overtimeTotal)}`
+        : `Lembur Bertingkat Mandiri: ${formatRupiah(overtimeTotal)} (${formatJam(jamLembur)})`,
       modeHitung: 'manual_incentive',
       upahHarianPokok: dailyBase,
     };
   }
 
-  // KASUS B: Manual Flat Per Jam (Tarif Khusus Perusahaan)
+  // KASUS B: Manual Flat / Borongan Perusahaan
   if (modeHitung === 'manual_flat') {
+    // Sub-kasus B1: Borongan Total Hari Ini (Lumpsum tanpa dikali jam)
+    if (manualTotalNominal > 0 && manualRatePerJam <= 0) {
+      const total = manualTotalNominal;
+      const effectiveRate = jamLembur > 0 ? Math.round(total / jamLembur) : total;
+
+      return {
+        upahSebulan,
+        upahSejam: effectiveRate,
+        jamLembur,
+        totalUpahLembur: total,
+        breakdown: [
+          {
+            hourIndex: 1,
+            multiplier: 1,
+            hoursCount: jamLembur,
+            hourlyRate: effectiveRate,
+            subtotal: total,
+            description: `Borongan Lembur Hari Ini: ${formatRupiah(total)} (${formatJam(jamLembur)})`,
+          },
+        ],
+        formula: `Borongan Lembur Hari Ini: ${formatRupiah(total)} (${formatJam(jamLembur)})`,
+        modeHitung: 'manual_flat',
+      };
+    }
+
+    // Sub-kasus B2: Tarif Flat Per Jam
     const rate = Math.max(0, manualRatePerJam || 0);
     const totalUpahLembur = Math.round(jamLembur * rate);
     const breakdown: HourlyMultiplier[] = [];
@@ -89,7 +133,7 @@ export function calculateOvertime(params: {
         hoursCount: frac,
         hourlyRate: rate,
         subtotal: Math.round(frac * rate),
-        description: `Jam ke-${idx} (Tarif Flat Perusahaan: ${formatRupiah(rate)}/jam)`,
+        description: `Jam ke-${idx} (Tarif Flat: ${formatRupiah(rate)}/jam)`,
       });
       remaining = Math.max(0, remaining - frac);
       idx++;

@@ -15,7 +15,10 @@ import {
   Briefcase,
   ChevronRight,
   ShieldCheck,
-  Send
+  Send,
+  Plus,
+  Trash2,
+  Layers
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { 
@@ -30,6 +33,7 @@ import { calculateOvertime, formatRupiah, formatJam, parseRupiah, formatTanggal,
 import { playCyberClick, playCyberSuccess } from '../../utils/audio';
 import { useAuth } from '../../context/AuthContext';
 import { triggerPopunder } from '../../utils/adManager';
+import { getStoredSettings, saveStoredSettings } from '../../utils/storage';
 
 
 interface OvertimeCalculatorScreenProps {
@@ -61,12 +65,97 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
   const [isHariTerpendek, setIsHariTerpendek] = useState<boolean>(false);
 
   const [modeHitung, setModeHitung] = useState<OvertimeCalculationMode>('pp35');
-  const [upahHarianPokok, setUpahHarianPokok] = useState<number>(settings.defaultUpahHarian || 200000);
-  const [upahHarianPokokStr, setUpahHarianPokokStr] = useState<string>((settings.defaultUpahHarian || 200000).toLocaleString('id-ID'));
+  const [upahHarianPokok, setUpahHarianPokok] = useState<number>(settings.defaultUpahHarian || 250000);
+  const [upahHarianPokokStr, setUpahHarianPokokStr] = useState<string>((settings.defaultUpahHarian || 250000).toLocaleString('id-ID'));
   const [manualRatePerJam, setManualRatePerJam] = useState<number>(30000);
   const [manualRatePerJamStr, setManualRatePerJamStr] = useState<string>('30.000');
-  const [manualTotalNominal, setManualTotalNominal] = useState<number>(150000);
-  const [manualTotalNominalStr, setManualTotalNominalStr] = useState<string>('150.000');
+  const [manualTotalNominal, setManualTotalNominal] = useState<number>(settings.defaultBoronganNominal || 150000);
+  const [manualTotalNominalStr, setManualTotalNominalStr] = useState<string>((settings.defaultBoronganNominal || 150000).toLocaleString('id-ID'));
+
+  // Bertingkat Mandiri (Jam ke-1, 2, 3...)
+  const [customTierRates, setCustomTierRates] = useState<number[]>(() => {
+    return settings.customTierRates && settings.customTierRates.length > 0
+      ? settings.customTierRates
+      : [25000, 35000, 45000, 50000];
+  });
+  const [customTierRatesStr, setCustomTierRatesStr] = useState<string[]>(() => {
+    const list = settings.customTierRates && settings.customTierRates.length > 0
+      ? settings.customTierRates
+      : [25000, 35000, 45000, 50000];
+    return list.map((r) => (r > 0 ? r.toLocaleString('id-ID') : ''));
+  });
+  const [includeHarianInTier, setIncludeHarianInTier] = useState<boolean>(() => {
+    return settings.customTierIncludeHarian ?? (settings.modeGaji === 'harian');
+  });
+
+  // Flat vs Borongan mode in Tab 3
+  const [manualFlatMode, setManualFlatMode] = useState<'per_jam' | 'borongan'>(() => {
+    return settings.defaultFlatMode || 'per_jam';
+  });
+
+  // Handlers for Bertingkat Mandiri
+  const handleUpdateTierRate = (index: number, valStr: string) => {
+    const raw = parseRupiah(valStr);
+    const newRates = [...customTierRates];
+    newRates[index] = raw;
+    setCustomTierRates(newRates);
+
+    const newStrs = [...customTierRatesStr];
+    newStrs[index] = raw > 0 ? raw.toLocaleString('id-ID') : '';
+    setCustomTierRatesStr(newStrs);
+
+    const cur = getStoredSettings();
+    saveStoredSettings({
+      ...cur,
+      customTierRates: newRates,
+    });
+  };
+
+  const handleAddTierHour = () => {
+    if (customTierRates.length >= 12) return;
+    const lastRate = customTierRates[customTierRates.length - 1] || 50000;
+    const nextRate = lastRate + 5000;
+    const newRates = [...customTierRates, nextRate];
+    setCustomTierRates(newRates);
+    setCustomTierRatesStr(newRates.map((r) => r.toLocaleString('id-ID')));
+
+    const cur = getStoredSettings();
+    saveStoredSettings({
+      ...cur,
+      customTierRates: newRates,
+    });
+  };
+
+  const handleRemoveTierHour = (index: number) => {
+    if (customTierRates.length <= 1) return;
+    const newRates = customTierRates.filter((_, i) => i !== index);
+    setCustomTierRates(newRates);
+    setCustomTierRatesStr(newRates.map((r) => r.toLocaleString('id-ID')));
+
+    const cur = getStoredSettings();
+    saveStoredSettings({
+      ...cur,
+      customTierRates: newRates,
+    });
+  };
+
+  const handleToggleIncludeHarian = (checked: boolean) => {
+    setIncludeHarianInTier(checked);
+    const cur = getStoredSettings();
+    saveStoredSettings({
+      ...cur,
+      customTierIncludeHarian: checked,
+    });
+  };
+
+  const handleSelectFlatMode = (mode: 'per_jam' | 'borongan') => {
+    setManualFlatMode(mode);
+    const cur = getStoredSettings();
+    saveStoredSettings({
+      ...cur,
+      defaultFlatMode: mode,
+    });
+  };
 
   // Method for regular day: 'direct' or 'total_jam'
   const [inputModeBiasa, setInputModeBiasa] = useState<'direct' | 'total_jam'>('direct');
@@ -121,9 +210,10 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
     isHariTerpendek,
     jamLembur,
     modeHitung,
-    manualRatePerJam,
-    manualTotalNominal,
-    upahHarianPokok,
+    manualRatePerJam: modeHitung === 'manual_flat' && manualFlatMode === 'per_jam' ? manualRatePerJam : (modeHitung === 'manual_flat' ? 0 : manualRatePerJam),
+    manualTotalNominal: modeHitung === 'manual_flat' && manualFlatMode === 'borongan' ? manualTotalNominal : 0,
+    upahHarianPokok: modeHitung === 'manual_incentive' && includeHarianInTier ? upahHarianPokok : 0,
+    customTierRates: modeHitung === 'manual_incentive' ? customTierRates : undefined,
   });
 
   const handleGajiChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -208,8 +298,10 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
       dibuat: new Date().toISOString(),
       breakdown: calcResult.breakdown,
       modeHitung,
-      manualRatePerJam: modeHitung === 'manual_flat' || modeHitung === 'manual_incentive' ? manualRatePerJam : undefined,
-      upahHarianPokok: modeHitung === 'manual_incentive' ? upahHarianPokok : undefined,
+      manualRatePerJam: modeHitung === 'manual_flat' && manualFlatMode === 'per_jam' ? manualRatePerJam : undefined,
+      manualTotalNominal: modeHitung === 'manual_flat' && manualFlatMode === 'borongan' ? manualTotalNominal : undefined,
+      upahHarianPokok: modeHitung === 'manual_incentive' && includeHarianInTier ? upahHarianPokok : undefined,
+      customTierRates: modeHitung === 'manual_incentive' ? customTierRates : undefined,
     };
 
     triggerPopunder(isPro);
@@ -222,9 +314,12 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
     triggerPopunder(isPro);
     if (settings.audioFeedback) playCyberClick();
     const isCustom = modeHitung !== 'pp35';
-    const modeBadge = isCustom 
-      ? 'MODE INSENTIF MANDIRI (NON-PP 35/2021)' 
-      : 'STANDAR RESMI PP 35/2021';
+    let modeBadge = 'STANDAR RESMI PP 35/2021';
+    if (modeHitung === 'manual_incentive') {
+      modeBadge = 'BERTINGKAT MANDIRI (NON-PP 35/2021)';
+    } else if (modeHitung === 'manual_flat') {
+      modeBadge = manualFlatMode === 'borongan' ? 'TARIF BORONGAN (NON-PP 35/2021)' : 'TARIF FLAT PER JAM (NON-PP 35/2021)';
+    }
 
     const jenisHariLabel = (jenisHari === 'libur' || jenisHari === 'sabtu' || jenisHari === 'minggu')
       ? 'Hari Libur / Istirahat'
@@ -234,17 +329,21 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
       `*ESTIMASI LEMBUR: [${modeBadge}]*`,
       `Tanggal: ${formatTanggal(tanggal)} (${getNamaHari(tanggal)})`,
       `Sistem: ${sistem === '5_hari' ? '5 Hari Kerja' : '6 Hari Kerja'} | Jenis: ${jenisHariLabel}${liburResmi ? ' (Libur Resmi)' : ''}`,
-      modeHitung === 'manual_incentive' ? `Upah Harian Pokok: ${formatRupiah(upahHarianPokok)}` : '',
+      modeHitung === 'manual_incentive' && includeHarianInTier && upahHarianPokok > 0 ? `Upah Harian Pokok: ${formatRupiah(upahHarianPokok)}` : '',
       `Total Jam Lembur: ${jamLembur} Jam`,
       modeHitung === 'pp35'
         ? `Upah Sejam (1/173): ${formatRupiah(calcResult.upahSejam)}`
-        : `Tarif Insentif: ${formatRupiah(calcResult.upahSejam)}/jam`,
+        : modeHitung === 'manual_incentive'
+        ? `Rata-rata Upah Sejam: ${formatRupiah(calcResult.upahSejam)}/jam`
+        : manualFlatMode === 'borongan'
+        ? `Sistem: Borongan Lembur`
+        : `Tarif Flat: ${formatRupiah(manualRatePerJam)}/jam`,
       `----------------------------`,
       `*TOTAL HAK UPAH LEMBUR: ${formatRupiah(calcResult.totalUpahLembur)}*`,
-      modeHitung === 'manual_incentive'
+      modeHitung === 'manual_incentive' && includeHarianInTier && upahHarianPokok > 0
         ? `*Total Terima Hari Ini (Upah Harian + Lembur): ${formatRupiah(upahHarianPokok + calcResult.totalUpahLembur)}*`
         : '',
-      isCustom ? `[Perhatian: Dihitung berdasar kesepakatan mandiri/insentif perusahaan, bukan rumus baku PP 35/2021]` : '',
+      isCustom ? `[Perhatian: Dihitung berdasar kesepakatan mandiri/kebijakan kantor, bukan rumus baku PP 35/2021]` : '',
       catatan ? `Catatan: ${catatan}` : '',
       `Dihitung via Kalkulator Penghitung Lembur by Kahfi`,
     ].filter(Boolean).join('\n');
@@ -350,10 +449,10 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                 }`}
               >
                 <div className="font-bold text-xs flex items-center justify-between">
-                  <span>Insentif Mandiri</span>
+                  <span>Bertingkat Mandiri</span>
                   {modeHitung === 'manual_incentive' && <span className="w-2 h-2 rounded-full bg-[#39FF14]" />}
                 </div>
-                <div className="text-[10px] text-[#39FF14] mt-0.5">Gaji Harian + Lembur Bebas</div>
+                <div className="text-[10px] text-[#39FF14] mt-0.5">Tarif per Jam Bertingkat</div>
               </button>
 
               <button
@@ -369,29 +468,40 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                 }`}
               >
                 <div className="font-bold text-xs flex items-center justify-between">
-                  <span>Tarif Flat / Jam</span>
+                  <span>Flat / Borongan</span>
                   {modeHitung === 'manual_flat' && <span className="w-2 h-2 rounded-full bg-[#FFE600]" />}
                 </div>
-                <div className="text-[10px] text-[#b9cacb] mt-0.5">Tarif Tetap Perusahaan</div>
+                <div className="text-[10px] text-[#b9cacb] mt-0.5">Tarif Per Jam / Lumpsum</div>
               </button>
             </div>
 
-            {/* Case 0: Mode Insentif Mandiri (Custom Daily Wage + Custom Overtime Incentive) */}
+            {/* Case 0: Mode Bertingkat Mandiri (Jam ke-1, Jam ke-2, Jam ke-3 dst nominal berbeda) */}
             {modeHitung === 'manual_incentive' && (
               <div className="space-y-4 pt-1 p-3.5 rounded-lg bg-[#0A0A12] border border-[#39FF14]/30">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#39FF14] font-mono">
-                    MODE INSENTIF MANDIRI (NON-PP 35/2021)
+                  <span className="text-xs font-bold text-[#39FF14] font-mono flex items-center gap-2">
+                    <Layers className="w-4 h-4" /> BERTINGKAT MANDIRI (NON-PP 35/2021)
                   </span>
                   <span className="text-[10px] text-[#FFE600] font-mono px-2 py-0.5 rounded bg-[#FFE600]/10 border border-[#FFE600]/30">
                     Kebijakan Internal Kantor
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                {/* Optional gaji harian checkbox */}
+                <label className="flex items-center gap-2 text-xs font-mono cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={includeHarianInTier}
+                    onChange={(e) => handleToggleIncludeHarian(e.target.checked)}
+                    className="accent-[#39FF14]"
+                  />
+                  <span className="text-[#b9cacb]">Tambahkan Gaji Harian Pokok</span>
+                </label>
+
+                {includeHarianInTier && (
                   <div>
-                    <label className="text-[#b9cacb] mb-1.5 block">
-                      Nominal Gaji Pokok Harian Anda (Rp)
+                    <label className="text-[#b9cacb] mb-1.5 block text-xs font-mono">
+                      Nominal Gaji Pokok Harian (Rp)
                     </label>
                     <div className="relative flex items-center">
                       <span className="absolute left-3 font-mono text-xs font-bold text-[#39FF14] bg-[#39FF14]/10 px-1.5 py-0.5 rounded border border-[#39FF14]/30">
@@ -401,53 +511,88 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                         type="text"
                         value={upahHarianPokokStr}
                         onChange={(e) => {
-                          const raw = parseRupiah(e.target.value);
-                          setUpahHarianPokok(raw);
-                          setUpahHarianPokokStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                          const r = parseRupiah(e.target.value);
+                          setUpahHarianPokok(r);
+                          setUpahHarianPokokStr(r > 0 ? r.toLocaleString('id-ID') : '');
                         }}
                         className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#39FF14]"
                         placeholder="Contoh: 200.000"
                       />
                     </div>
                   </div>
+                )}
 
-                  <div>
-                    <label className="text-[#b9cacb] mb-1.5 block">
-                      Tarif Insentif Lembur per Jam (Rp)
-                    </label>
-                    <div className="relative flex items-center">
-                      <span className="absolute left-3 font-mono text-xs font-bold text-[#00F0FF] bg-[#00F0FF]/10 px-1.5 py-0.5 rounded border border-[#00F0FF]/30">
-                        Rp
-                      </span>
-                      <input
-                        type="text"
-                        value={manualRatePerJamStr}
-                        onChange={(e) => {
-                          const raw = parseRupiah(e.target.value);
-                          setManualRatePerJam(raw);
-                          setManualRatePerJamStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
-                        }}
-                        className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#00F0FF]"
-                        placeholder="Contoh: 30.000"
-                      />
-                    </div>
+                {/* Tier rows */}
+                <div className="space-y-2">
+                  <div className="text-xs font-mono text-[#b9cacb] mb-1">
+                    Tarif Lembur Per Jam (Nominal Disimpan Otomatis):
                   </div>
+                  {customTierRates.map((rate, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono text-[#7A7A99] w-16 shrink-0">
+                        Jam ke-{idx + 1}{idx === customTierRates.length - 1 && customTierRates.length > 1 ? '+' : ''}
+                      </span>
+                      <div className="relative flex-1 flex items-center">
+                        <span className="absolute left-3 font-mono text-xs font-bold text-[#39FF14] bg-[#39FF14]/10 px-1.5 py-0.5 rounded border border-[#39FF14]/30">
+                          Rp
+                        </span>
+                        <input
+                          type="text"
+                          value={customTierRatesStr[idx] || ''}
+                          onChange={(e) => handleUpdateTierRate(idx, e.target.value)}
+                          className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#39FF14]"
+                          placeholder="Nominal tarif"
+                        />
+                      </div>
+                      {customTierRates.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTierHour(idx)}
+                          className="p-2 rounded bg-[#1A1A2E] border border-red-500/30 hover:border-red-500 text-red-400 transition-all shrink-0"
+                          title="Hapus jam ini"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {customTierRates.length < 12 && (
+                    <button
+                      type="button"
+                      onClick={handleAddTierHour}
+                      className="mt-2 px-3 py-1.5 rounded bg-[#1A1A2E] border border-[#39FF14]/30 hover:border-[#39FF14] text-[#39FF14] text-xs font-mono flex items-center gap-1.5 transition-all"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> Tambah Jam Berikutnya
+                    </button>
+                  )}
                 </div>
 
                 {/* Calculation breakdown summary banner */}
                 <div className="p-3 rounded bg-[#12121F] border border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
                   <div>
-                    <span className="text-[#7A7A99]">Perhitungan:</span>{' '}
+                    <span className="text-[#7A7A99]">Rincian: </span>
                     <span className="text-white">
-                      {formatRupiah(upahHarianPokok)} (Harian) + ({jamLembur}j × {formatRupiah(manualRatePerJam)})
+                      {customTierRates
+                        .slice(0, Math.min(jamLembur, customTierRates.length))
+                        .map((r, i) => `J${i + 1}: ${formatRupiah(r)}`)
+                        .join(' + ') || formatRupiah(0)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[#7A7A99]">Total Diterima Hari Ini:</span>{' '}
+                    <span className="text-[#7A7A99]">Total Hak Lembur: </span>
                     <span className="text-[#39FF14] font-bold text-sm">
-                      {formatRupiah(upahHarianPokok + (jamLembur * manualRatePerJam))}
+                      {formatRupiah(calcResult.totalUpahLembur)}
                     </span>
                   </div>
+                  {includeHarianInTier && upahHarianPokok > 0 && (
+                    <div className="w-full pt-1 border-t border-white/10 flex items-center justify-between">
+                      <span className="text-[#7A7A99]">Total Diterima Hari Ini (Harian + Lembur):</span>
+                      <span className="text-[#39FF14] font-bold text-sm">
+                        {formatRupiah(upahHarianPokok + calcResult.totalUpahLembur)}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -515,95 +660,141 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
               </>
             )}
 
-            {/* Case 2: Manual Flat Rate per Hour */}
+            {/* Case 2: Manual Flat Rate per Hour / Borongan */}
             {modeHitung === 'manual_flat' && (
               <div className="space-y-3 pt-1">
-                <div>
-                  <label className="text-xs font-mono text-[#FFE600] font-bold mb-1.5 block">
-                    Tarif Lembur Flat Per Jam Perusahaan:
-                  </label>
-                  <div className="relative flex items-center">
-                    <span className="absolute left-3 font-mono text-xs font-bold text-[#FFE600] bg-[#FFE600]/10 px-1.5 py-0.5 rounded border border-[#FFE600]/30">
-                      Rp
-                    </span>
-                    <input
-                      type="text"
-                      value={manualRatePerJamStr}
-                      onChange={(e) => {
-                        const raw = parseRupiah(e.target.value);
-                        setManualRatePerJam(raw);
-                        setManualRatePerJamStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
-                      }}
-                      className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-[#FFE600]/30 text-white font-mono text-sm focus:outline-none focus:border-[#FFE600]"
-                      placeholder="25.000"
-                    />
+                {/* Sub-mode selector */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectFlatMode('per_jam')}
+                    className={`p-2.5 rounded border text-xs font-mono text-left transition-all ${
+                      manualFlatMode === 'per_jam'
+                        ? 'bg-[#1A1A2E] border-[#FFE600] text-white shadow-[0_0_10px_rgba(255,230,0,0.2)]'
+                        : 'bg-[#0A0A12] border-white/10 text-[#7A7A99] hover:text-white'
+                    }`}
+                  >
+                    <div className="font-bold flex items-center justify-between">
+                      <span>Tarif Per Jam</span>
+                      {manualFlatMode === 'per_jam' && <span className="w-1.5 h-1.5 rounded-full bg-[#FFE600]" />}
+                    </div>
+                    <div className="text-[10px] text-[#b9cacb] mt-0.5">Input per jam × jam lembur</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSelectFlatMode('borongan')}
+                    className={`p-2.5 rounded border text-xs font-mono text-left transition-all ${
+                      manualFlatMode === 'borongan'
+                        ? 'bg-[#1A1A2E] border-[#FFE600] text-white shadow-[0_0_10px_rgba(255,230,0,0.2)]'
+                        : 'bg-[#0A0A12] border-white/10 text-[#7A7A99] hover:text-white'
+                    }`}
+                  >
+                    <div className="font-bold flex items-center justify-between">
+                      <span>Borongan / Lumpsum</span>
+                      {manualFlatMode === 'borongan' && <span className="w-1.5 h-1.5 rounded-full bg-[#FFE600]" />}
+                    </div>
+                    <div className="text-[10px] text-[#b9cacb] mt-0.5">Nominal tetap tanpa × jam</div>
+                  </button>
+                </div>
+
+                {manualFlatMode === 'per_jam' ? (
+                  <div>
+                    <label className="text-xs font-mono text-[#FFE600] font-bold mb-1.5 block">
+                      Tarif Lembur Flat Per Jam Perusahaan:
+                    </label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 font-mono text-xs font-bold text-[#FFE600] bg-[#FFE600]/10 px-1.5 py-0.5 rounded border border-[#FFE600]/30">
+                        Rp
+                      </span>
+                      <input
+                        type="text"
+                        value={manualRatePerJamStr}
+                        onChange={(e) => {
+                          const raw = parseRupiah(e.target.value);
+                          setManualRatePerJam(raw);
+                          setManualRatePerJamStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                        }}
+                        className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-[#FFE600]/30 text-white font-mono text-sm focus:outline-none focus:border-[#FFE600]"
+                        placeholder="25.000"
+                      />
+                    </div>
+
+                    {/* Preset Chips */}
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono mt-2">
+                      <span className="text-[#7A7A99] text-[11px]">Pilihan cepat:</span>
+                      {[20000, 25000, 30000, 35000, 50000].map((rate) => (
+                        <button
+                          key={rate}
+                          type="button"
+                          onClick={() => {
+                            if (settings.audioFeedback) playCyberClick();
+                            setManualRatePerJam(rate);
+                            setManualRatePerJamStr(rate.toLocaleString('id-ID'));
+                          }}
+                          className="px-2 py-1 rounded bg-[#1A1A2E] border border-white/10 hover:border-[#FFE600] text-[#b9cacb] hover:text-white"
+                        >
+                          {formatRupiah(rate)}/jam
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div>
+                    <label className="text-xs font-mono text-[#FFE600] font-bold mb-1.5 block">
+                      Nominal Borongan Lembur Hari Ini (Rp):
+                    </label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 font-mono text-xs font-bold text-[#FFE600] bg-[#FFE600]/10 px-1.5 py-0.5 rounded border border-[#FFE600]/30">
+                        Rp
+                      </span>
+                      <input
+                        type="text"
+                        value={manualTotalNominalStr}
+                        onChange={(e) => {
+                          const raw = parseRupiah(e.target.value);
+                          setManualTotalNominal(raw);
+                          setManualTotalNominalStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                          const cur = getStoredSettings();
+                          saveStoredSettings({
+                            ...cur,
+                            defaultBoronganNominal: raw,
+                          });
+                        }}
+                        className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-[#FFE600]/30 text-white font-mono text-sm focus:outline-none focus:border-[#FFE600]"
+                        placeholder="150.000"
+                      />
+                    </div>
 
-                {/* Preset Chips */}
-                <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono">
-                  <span className="text-[#7A7A99] text-[11px]">Pilihan cepat:</span>
-                  {[20000, 25000, 30000, 35000, 50000].map((rate) => (
-                    <button
-                      key={rate}
-                      type="button"
-                      onClick={() => {
-                        if (settings.audioFeedback) playCyberClick();
-                        setManualRatePerJam(rate);
-                        setManualRatePerJamStr(rate.toLocaleString('id-ID'));
-                      }}
-                      className="px-2 py-1 rounded bg-[#1A1A2E] border border-white/10 hover:border-[#FFE600] text-[#b9cacb] hover:text-white"
-                    >
-                      {formatRupiah(rate)}/jam
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Case 3: Manual Lump Sum Nominal */}
-            {modeHitung === 'manual_nominal' && (
-              <div className="space-y-3 pt-1">
-                <div>
-                  <label className="text-xs font-mono text-[#FF2BD6] font-bold mb-1.5 block">
-                    Nominal Borongan Lembur Disepakati:
-                  </label>
-                  <div className="relative flex items-center">
-                    <span className="absolute left-3 font-mono text-xs font-bold text-[#FF2BD6] bg-[#FF2BD6]/10 px-1.5 py-0.5 rounded border border-[#FF2BD6]/30">
-                      Rp
+                    <span className="text-[10px] text-[#7A7A99] mt-1.5 block font-mono">
+                      Nominal lembur tetap untuk hari ini, berapapun jam lembur yang dimasukkan.
                     </span>
-                    <input
-                      type="text"
-                      value={manualTotalNominalStr}
-                      onChange={(e) => {
-                        const raw = parseRupiah(e.target.value);
-                        setManualTotalNominal(raw);
-                        setManualTotalNominalStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
-                      }}
-                      className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-[#FF2BD6]/30 text-white font-mono text-sm focus:outline-none focus:border-[#FF2BD6]"
-                      placeholder="150.000"
-                    />
-                  </div>
-                </div>
 
-                {/* Preset Chips */}
-                <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono">
-                  <span className="text-[#7A7A99] text-[11px]">Pilihan cepat:</span>
-                  {[100000, 150000, 200000, 250000, 300000].map((nom) => (
-                    <button
-                      key={nom}
-                      type="button"
-                      onClick={() => {
-                        if (settings.audioFeedback) playCyberClick();
-                        setManualTotalNominal(nom);
-                        setManualTotalNominalStr(nom.toLocaleString('id-ID'));
-                      }}
-                      className="px-2 py-1 rounded bg-[#1A1A2E] border border-white/10 hover:border-[#FF2BD6] text-[#b9cacb] hover:text-white"
-                    >
-                      {formatRupiah(nom)}
-                    </button>
-                  ))}
-                </div>
+                    {/* Preset Chips */}
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs font-mono mt-2">
+                      <span className="text-[#7A7A99] text-[11px]">Pilihan cepat:</span>
+                      {[100000, 150000, 200000, 250000, 300000].map((nom) => (
+                        <button
+                          key={nom}
+                          type="button"
+                          onClick={() => {
+                            if (settings.audioFeedback) playCyberClick();
+                            setManualTotalNominal(nom);
+                            setManualTotalNominalStr(nom.toLocaleString('id-ID'));
+                            const cur = getStoredSettings();
+                            saveStoredSettings({
+                              ...cur,
+                              defaultBoronganNominal: nom,
+                            });
+                          }}
+                          className="px-2 py-1 rounded bg-[#1A1A2E] border border-white/10 hover:border-[#FFE600] text-[#b9cacb] hover:text-white"
+                        >
+                          {formatRupiah(nom)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

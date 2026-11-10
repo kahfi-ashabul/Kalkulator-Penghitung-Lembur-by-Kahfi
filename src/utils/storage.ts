@@ -19,6 +19,10 @@ export const defaultSettings: UserSettings = {
   enableMaxOvertimeAlert: true,
   defaultCutoffDay: 1, // 1 = kalender, 21 = cut-off 21-20, 26 = cut-off 26-25
   modeAbsensi: 'manual', // 'manual' = hanya tampilkan hari yang dicatat, 'otomatis' = hari kerja otomatis masuk 8j
+  customTierRates: [25000, 35000, 45000, 50000],
+  customTierIncludeHarian: false,
+  defaultFlatMode: 'per_jam',
+  defaultBoronganNominal: 150000,
   profileCompleted: false,
 };
 

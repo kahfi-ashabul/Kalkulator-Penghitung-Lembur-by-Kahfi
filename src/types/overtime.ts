@@ -44,6 +44,8 @@ export interface OvertimeEntry {
   breakdown?: HourlyMultiplier[];
   modeHitung?: OvertimeCalculationMode;
   manualRatePerJam?: number;
+  manualTotalNominal?: number;
+  customTierRates?: number[];
   upahHarianPokok?: number;
 }
 
@@ -76,6 +78,10 @@ export interface UserSettings {
   enableMaxOvertimeAlert?: boolean;
   defaultCutoffDay?: number; // e.g. 21, 26, 1
   modeAbsensi?: 'otomatis' | 'manual';
+  customTierRates?: number[];
+  customTierIncludeHarian?: boolean;
+  defaultFlatMode?: 'per_jam' | 'borongan';
+  defaultBoronganNominal?: number;
   profileCompleted?: boolean;
 }
 
