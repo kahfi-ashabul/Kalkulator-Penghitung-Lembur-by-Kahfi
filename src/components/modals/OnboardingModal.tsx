@@ -13,7 +13,9 @@ import {
   Settings, 
   Briefcase,
   Zap,
-  Cloud
+  Cloud,
+  Crown,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -71,9 +73,9 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     },
     {
       num: '6',
-      title: 'Monetisasi Nyaman & Keuntungan Akun PRO (Rp 5.000)',
-      desc: 'Akun Free didukung popunder dengan jeda aman 60 detik (tanpa spanduk social bar yang merusak tampilan saat tangkapan layar). Upgrade ke PRO untuk 100% bebas iklan, sinkronisasi cloud Google, dan otomasi absensi 31 hari.',
-      icon: <Settings className="w-4 h-4 text-[#39FF14]" />,
+      title: 'Keuntungan Spesial Akun PRO (Rp 5.000 / 30 Hari)',
+      desc: 'Upgrade ke Kei Pro untuk menikmati pengalaman 100% bebas iklan, sinkronisasi data cloud Google multi-perangkat (akses aman dari HP & laptop), serta fitur pengisian kehadiran otomatis penuh.',
+      icon: <Crown className="w-4 h-4 text-[#FFE600]" />,
     },
   ];
 
@@ -163,9 +165,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
           </div>
 
           {/* Legal Note Notice */}
-          <div className="p-2.5 rounded-md bg-[#FFE600]/10 border border-[#FFE600]/30 text-[#FFE600] text-[11px] flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 shrink-0" />
-            <span>Semua data tersimpan aman dan privat di browser Anda, tidak dikirim ke server manapun.</span>
+          <div className="p-3 rounded-lg bg-gradient-to-r from-[#1A1A2E] to-[#12121F] border border-[#00F0FF]/30 text-[11px] font-sans flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-[#39FF14] shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <span className="text-white font-bold block">Privasi Terjamin & Keamanan Data</span>
+              <p className="text-[#b9cacb] leading-relaxed">
+                Data Anda tersimpan privat di peramban ini. Ingin riwayat lembur aman tersimpan saat berganti HP atau laptop? Upgrade ke <strong className="text-[#00F0FF]">Kei Pro (Rp 5.000)</strong> untuk membuka <strong>Sinkronisasi Cloud Google</strong> otomatis!
+              </p>
+            </div>
           </div>
         </div>
 

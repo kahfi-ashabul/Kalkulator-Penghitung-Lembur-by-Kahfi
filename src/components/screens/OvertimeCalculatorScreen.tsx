@@ -94,6 +94,20 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
     }
   }, [jenisHari, inputModeBiasa, totalJamKerja, jamKerjaReguler]);
 
+  // Sync defaults when settings or profile changes
+  useEffect(() => {
+    setGajiPokok(settings.defaultGajiPokok || 6000000);
+    setGajiPokokStr((settings.defaultGajiPokok || 6000000).toLocaleString('id-ID'));
+    setTunjanganTetap(settings.defaultTunjangan || 0);
+    setTunjanganTetapStr((settings.defaultTunjangan || 0).toLocaleString('id-ID'));
+    const uh = settings.defaultUpahHarian || 250000;
+    setUpahHarianPokok(uh);
+    setUpahHarianPokokStr(uh.toLocaleString('id-ID'));
+    if (settings.defaultSistem) {
+      setSistem(settings.defaultSistem);
+    }
+  }, [settings.defaultGajiPokok, settings.defaultTunjangan, settings.defaultUpahHarian, settings.defaultSistem]);
+
   const isLiburCategoryActive = jenisHari === 'libur' || jenisHari === 'sabtu' || jenisHari === 'minggu' || liburResmi;
   const isBiasaCategoryActive = !isLiburCategoryActive;
 

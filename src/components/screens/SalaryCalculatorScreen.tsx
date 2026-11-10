@@ -48,17 +48,23 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   const [customEnd, setCustomEnd] = useState<string>('2026-11-20');
   const [useStoredOvertime, setUseStoredOvertime] = useState<boolean>(true);
 
-  // Sinkronkan default settings ke form gaji saat diubah di Pengaturan tanpa refresh
+  // Sinkronkan default settings ke form gaji saat diubah di Pengaturan/Profil tanpa refresh
   useEffect(() => {
     if (settings.modeGaji) {
       setMode(settings.modeGaji);
+      if (settings.modeGaji === 'harian') {
+        setUpahHarianMode('custom');
+      }
     }
     setGajiPokok(settings.defaultGajiPokok || 6000000);
     setGajiPokokStr((settings.defaultGajiPokok || 6000000).toLocaleString('id-ID'));
     setTunjanganTetap(settings.defaultTunjangan || 0);
     setTunjanganTetapStr((settings.defaultTunjangan || 0).toLocaleString('id-ID'));
+    const uh = settings.defaultUpahHarian || 250000;
+    setCustomUpahHarian(uh);
+    setCustomUpahHarianStr(uh > 0 ? uh.toLocaleString('id-ID') : '250.000');
     setPembagiHari(settings.defaultSistem === '6_hari' ? 25 : 21);
-  }, [settings.modeGaji, settings.defaultGajiPokok, settings.defaultTunjangan, settings.defaultSistem]);
+  }, [settings.modeGaji, settings.defaultGajiPokok, settings.defaultTunjangan, settings.defaultUpahHarian, settings.defaultSistem]);
 
   // Bulanan inputs
   const [gajiPokok, setGajiPokok] = useState<number>(settings.defaultGajiPokok || 6000000);
@@ -68,11 +74,15 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   const [manualOvertime, setManualOvertime] = useState<number>(0);
   const [manualOvertimeStr, setManualOvertimeStr] = useState<string>('0');
 
-  // Harian inputs
-  const [upahHarianMode, setUpahHarianMode] = useState<'derived' | 'custom'>('derived');
+  // Harian inputs (Otomatis mode 'custom' jika profil karyawan disetel Mode Gaji Harian)
+  const [upahHarianMode, setUpahHarianMode] = useState<'derived' | 'custom'>(
+    settings.modeGaji === 'harian' ? 'custom' : 'derived'
+  );
   const [pembagiHari, setPembagiHari] = useState<number>(settings.defaultSistem === '6_hari' ? 25 : 21);
-  const [customUpahHarian, setCustomUpahHarian] = useState<number>(250000);
-  const [customUpahHarianStr, setCustomUpahHarianStr] = useState<string>('250.000');
+  const [customUpahHarian, setCustomUpahHarian] = useState<number>(settings.defaultUpahHarian || 250000);
+  const [customUpahHarianStr, setCustomUpahHarianStr] = useState<string>(
+    (settings.defaultUpahHarian || 250000).toLocaleString('id-ID')
+  );
   const [jumlahHariMasuk, setJumlahHariMasuk] = useState<number>(21);
 
   // Deductions
@@ -496,19 +506,29 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                   </div>
                 ) : (
                   <div>
-                    <label className="text-xs font-mono text-[#b9cacb] mb-1 block">
-                      Tarif Upah Harian (Rp/hari)
-                    </label>
-                    <input
-                      type="text"
-                      value={customUpahHarianStr}
-                      onChange={(e) => {
-                        const raw = parseRupiah(e.target.value);
-                        setCustomUpahHarian(raw);
-                        setCustomUpahHarianStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
-                      }}
-                      className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#FF2BD6]"
-                    />
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-mono text-[#b9cacb] block">
+                        Tarif Upah Harian (Rp/hari)
+                      </label>
+                      <span className="text-[10px] text-[#39FF14] font-mono flex items-center gap-1 bg-[#39FF14]/10 px-1.5 py-0.5 rounded border border-[#39FF14]/30">
+                        ✓ Terhubung ke Profil Karyawan
+                      </span>
+                    </div>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-3 font-mono text-xs font-bold text-[#FF2BD6] bg-[#FF2BD6]/10 px-1.5 py-0.5 rounded border border-[#FF2BD6]/30">
+                        Rp
+                      </span>
+                      <input
+                        type="text"
+                        value={customUpahHarianStr}
+                        onChange={(e) => {
+                          const raw = parseRupiah(e.target.value);
+                          setCustomUpahHarian(raw);
+                          setCustomUpahHarianStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                        }}
+                        className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#FF2BD6]"
+                      />
+                    </div>
                   </div>
                 )}
 
