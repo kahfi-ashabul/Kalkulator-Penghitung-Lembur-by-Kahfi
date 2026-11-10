@@ -17,7 +17,8 @@ import {
   CheckCircle2,
   Briefcase,
   FileImage,
-  Send
+  Send,
+  Zap
 } from 'lucide-react';
 import { OvertimeEntry, UserSettings, Deductions, AttendanceRecord } from '../../types/overtime';
 import { formatRupiah, parseRupiah, getCutoffDateRange } from '../../utils/calculations';
@@ -31,14 +32,21 @@ interface SalaryCalculatorScreenProps {
   entries: OvertimeEntry[];
   settings: UserSettings;
   attendanceMap?: Record<string, AttendanceRecord>;
+  isPro?: boolean;
+  onOpenProModal?: () => void;
+  onBatchSaveAttendance?: (records: AttendanceRecord[]) => void;
 }
 
 export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   entries,
   settings,
   attendanceMap = {},
+  isPro: isProProp,
+  onOpenProModal,
+  onBatchSaveAttendance,
 }) => {
-  const { isPro } = useAuth();
+  const { isPro: authIsPro } = useAuth();
+  const isPro = isProProp ?? authIsPro;
   const [mode, setMode] = useState<'bulanan' | 'harian'>(settings.modeGaji || 'bulanan');
 
   // Month and Cut-off selector for pulling stored overtime
@@ -216,6 +224,51 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
     ];
 
     return lines.filter(Boolean).join('\n');
+  };
+
+  // Otomasi 1-Klik Isi Absensi Bulanan (Khusus PRO)
+  const handleAutoFillAttendance = () => {
+    if (settings.audioFeedback) playCyberClick();
+    if (!isPro) {
+      onOpenProModal?.();
+      return;
+    }
+
+    const start = new Date(activeDateRange.startDate + 'T00:00:00');
+    const end = new Date(activeDateRange.endDate + 'T00:00:00');
+    const current = new Date(start);
+
+    const recordsToSave: AttendanceRecord[] = [];
+
+    while (current <= end) {
+      const dateStr = current.toISOString().slice(0, 10);
+      const dayOfWeek = current.getDay();
+      const existing = attendanceMap[dateStr];
+
+      if (!existing || existing.status === 'masuk' || existing.status === 'libur_off') {
+        if (dayOfWeek === 0 || (dayOfWeek === 6 && settings.defaultSistem === '5_hari')) {
+          recordsToSave.push({
+            tanggal: dateStr,
+            status: 'libur_off',
+            jamKerjaReguler: 0,
+            catatan: 'Libur Akhir Pekan',
+          });
+        } else {
+          const defaultHours = (dayOfWeek === 6 && settings.defaultSistem === '6_hari') ? 5 : (settings.defaultSistem === '6_hari' ? 7 : 8);
+          recordsToSave.push({
+            tanggal: dateStr,
+            status: 'masuk',
+            jamKerjaReguler: defaultHours,
+            catatan: 'Otomasi Jadwal Kerja PRO',
+          });
+        }
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    if (recordsToSave.length > 0 && onBatchSaveAttendance) {
+      onBatchSaveAttendance(recordsToSave);
+    }
   };
 
   const handleCopySummary = () => {
@@ -436,7 +489,15 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                     <Briefcase className="w-3.5 h-3.5 text-[#39FF14]" />
                     <span>Rekap Absensi Periode ({activeDateRange.label}):</span>
                   </div>
-                  <div className="flex flex-wrap items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleAutoFillAttendance}
+                      className="text-[10px] text-[#FFE600] hover:text-[#FFE600]/80 flex items-center gap-1 font-bold bg-[#FFE600]/10 px-2 py-0.5 rounded border border-[#FFE600]/30 transition-all cursor-pointer shadow-xs"
+                      title="1-Klik Otomasi isi jadwal kerja dalam periode ini"
+                    >
+                      <Zap className="w-3 h-3 text-[#FFE600]" /> Otomasi Bulan Ini
+                    </button>
                     <span className="px-2 py-0.5 rounded bg-[#39FF14]/15 text-[#39FF14] font-bold border border-[#39FF14]/30">
                       {attendanceStats.masuk} Hadir
                     </span>

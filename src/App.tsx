@@ -129,6 +129,17 @@ function AppInner() {
     if (settings.audioFeedback) playCyberSuccess();
   };
 
+  const handleBatchSaveAttendance = (records: AttendanceRecord[]) => {
+    const current = getStoredAttendance();
+    const updated = { ...current };
+    records.forEach((r) => {
+      updated[r.tanggal] = r;
+    });
+    saveStoredAttendance(updated);
+    setAttendanceMap(updated);
+    if (settings.audioFeedback) playCyberSuccess();
+  };
+
   const handleSelectScreen = (screen: ScreenType) => {
     if (settings.audioFeedback) playCyberClick();
     setCurrentScreen(screen);
@@ -295,6 +306,7 @@ function AppInner() {
             attendanceMap={attendanceMap}
             onUpdateSettings={handleSaveSettings}
             onSaveAttendance={handleSaveAttendance}
+            onBatchSaveAttendance={handleBatchSaveAttendance}
             onOpenAttendanceModal={handleOpenAttendanceModal}
             onDeleteAttendance={handleDeleteAttendance}
             onNavigateToCalculator={() => handleSelectScreen('kalkulator')}
@@ -320,6 +332,9 @@ function AppInner() {
             entries={entries}
             settings={settings}
             attendanceMap={attendanceMap}
+            isPro={isPro}
+            onOpenProModal={() => setIsProModalOpen(true)}
+            onBatchSaveAttendance={handleBatchSaveAttendance}
           />
         )}
 
@@ -336,6 +351,7 @@ function AppInner() {
             onClearAllEntries={handleClearAllEntries}
             onOpenImportModal={() => setIsImportOpen(true)}
             onOpenReceipt={handleOpenReceiptFromEntry}
+            onOpenProModal={() => setIsProModalOpen(true)}
           />
         )}
       </main>

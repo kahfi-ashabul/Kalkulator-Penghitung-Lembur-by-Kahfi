@@ -73,8 +73,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
     },
     {
       num: '6',
-      title: 'Keuntungan Spesial Akun PRO (Rp 5.000 / 30 Hari)',
-      desc: 'Upgrade ke Kei Pro untuk menikmati pengalaman 100% bebas iklan, sinkronisasi data cloud Google multi-perangkat (akses aman dari HP & laptop), serta fitur pengisian kehadiran otomatis penuh.',
+      title: 'Keuntungan Spesial Member PRO (Rp 5.000 / 30 Hari)',
+      desc: 'Buka sinkronisasi cloud Google permanen (akses aman dari HP & laptop), otomasi absensi bulanan 1-klik, dan ekspor riwayat ke file Excel (.xlsx) / CSV profesional siap kirim ke HRD.',
       icon: <Crown className="w-4 h-4 text-[#FFE600]" />,
     },
   ];

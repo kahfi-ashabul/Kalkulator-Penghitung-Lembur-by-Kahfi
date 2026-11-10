@@ -18,7 +18,9 @@ import {
   Heart,
   Coffee,
   Download,
-  Send
+  Send,
+  FileSpreadsheet,
+  Zap
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SubscriptionPlan, SUBSCRIPTION_PLANS } from '../../types/auth';
@@ -116,7 +118,7 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
                 </span>
               </h3>
               <p className="text-xs text-[#b9cacb] font-mono">
-                {isPro ? 'Akses penuh cloud & fitur premium' : 'Buka sinkronisasi cloud, bebas iklan, & multi-perangkat'}
+                {isPro ? 'Akses penuh cloud & fitur premium' : 'Buka sinkronisasi cloud, otomasi absensi, & ekspor Excel'}
               </p>
             </div>
           </div>
@@ -245,8 +247,8 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
                   <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
                     <Cloud className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-bold text-white">Sinkronisasi Cloud</div>
-                      <div className="text-[#7A7A99]">Data lembur otomatis aman tersimpan</div>
+                      <div className="font-bold text-white">Sinkronisasi Cloud Google</div>
+                      <div className="text-[#7A7A99]">Data lembur & gaji aman permanen</div>
                     </div>
                   </div>
 
@@ -254,23 +256,23 @@ export const ProModal: React.FC<ProModalProps> = ({ isOpen, onClose }) => {
                     <Smartphone className="w-4 h-4 text-[#39FF14] shrink-0 mt-0.5" />
                     <div>
                       <div className="font-bold text-white">Akses Multi-Device</div>
-                      <div className="text-[#7A7A99]">Buka dari HP, tablet, maupun laptop</div>
+                      <div className="text-[#7A7A99]">Akses tersinkron dari HP & laptop</div>
                     </div>
                   </div>
 
                   <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
-                    <EyeOff className="w-4 h-4 text-[#FFE600] shrink-0 mt-0.5" />
+                    <FileSpreadsheet className="w-4 h-4 text-[#FFE600] shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-bold text-white">100% Bebas Iklan</div>
-                      <div className="text-[#7A7A99]">Tanpa banner atau pop-up sama sekali</div>
+                      <div className="font-bold text-white">Ekspor Excel & CSV</div>
+                      <div className="text-[#7A7A99]">Rekap rapi siap serah ke HRD</div>
                     </div>
                   </div>
 
                   <div className="p-2.5 rounded-lg bg-[#161626] border border-white/5 flex items-start gap-2">
-                    <ShieldCheck className="w-4 h-4 text-[#FF2BD6] shrink-0 mt-0.5" />
+                    <Zap className="w-4 h-4 text-[#FF2BD6] shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-bold text-white">Labor Engine v1.1</div>
-                      <div className="text-[#7A7A99]">Formula PP 35/2021 tervalidasi</div>
+                      <div className="font-bold text-white">Otomasi Absensi Bulanan</div>
+                      <div className="text-[#7A7A99]">1 klik isi jadwal kerja sebulan penuh</div>
                     </div>
                   </div>
                 </div>

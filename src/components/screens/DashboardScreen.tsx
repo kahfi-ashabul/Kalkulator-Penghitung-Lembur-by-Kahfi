@@ -30,6 +30,7 @@ interface DashboardScreenProps {
   settings: UserSettings;
   attendanceMap: Record<string, AttendanceRecord>;
   onSaveAttendance: (record: AttendanceRecord) => void;
+  onBatchSaveAttendance?: (records: AttendanceRecord[]) => void;
   onOpenAttendanceModal?: (date?: string) => void;
   onDeleteAttendance?: (tanggal: string) => void;
   onNavigateToCalculator: () => void;
@@ -46,6 +47,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   settings,
   attendanceMap,
   onSaveAttendance,
+  onBatchSaveAttendance,
   onOpenAttendanceModal,
   onDeleteAttendance,
   onNavigateToCalculator,
@@ -176,6 +178,56 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   // Estimated base and take home
   const baseSalary = settings.defaultGajiPokok + settings.defaultTunjangan;
   const estimasiTotalGaji = baseSalary + totalUpahLembur;
+
+  // Otomasi 1-Klik Isi Absensi Bulanan (Khusus PRO)
+  const handleAutoFillAttendance = () => {
+    if (settings.audioFeedback) playCyberClick();
+    if (!isPro) {
+      onOpenProModal?.();
+      return;
+    }
+
+    const start = new Date(activeDateRange.startDate + 'T00:00:00');
+    const end = new Date(activeDateRange.endDate + 'T00:00:00');
+    const current = new Date(start);
+
+    const recordsToSave: AttendanceRecord[] = [];
+
+    while (current <= end) {
+      const dateStr = current.toISOString().slice(0, 10);
+      const dayOfWeek = current.getDay(); // 0: Min, 6: Sab
+      const existing = attendanceMap[dateStr];
+
+      // Jangan timpa jika user sudah mengisi 'sakit', 'izin', atau 'cuti'
+      if (!existing || existing.status === 'masuk' || existing.status === 'libur_off') {
+        if (dayOfWeek === 0 || (dayOfWeek === 6 && settings.defaultSistem === '5_hari')) {
+          recordsToSave.push({
+            tanggal: dateStr,
+            status: 'libur_off',
+            jamKerjaReguler: 0,
+            catatan: 'Libur Akhir Pekan',
+          });
+        } else {
+          const defaultHours = (dayOfWeek === 6 && settings.defaultSistem === '6_hari') ? 5 : (settings.defaultSistem === '6_hari' ? 7 : 8);
+          recordsToSave.push({
+            tanggal: dateStr,
+            status: 'masuk',
+            jamKerjaReguler: defaultHours,
+            catatan: 'Otomasi Jadwal Kerja PRO',
+          });
+        }
+      }
+      current.setDate(current.getDate() + 1);
+    }
+
+    if (recordsToSave.length > 0) {
+      if (onBatchSaveAttendance) {
+        onBatchSaveAttendance(recordsToSave);
+      } else {
+        recordsToSave.forEach((r) => onSaveAttendance(r));
+      }
+    }
+  };
 
   // Build daily timeline from startDate to endDate
   const timelineDays = useMemo(() => {
@@ -515,15 +567,26 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
               <Briefcase className="w-4 h-4 text-[#39FF14]" />
               <span className="font-bold text-white tracking-wide">REKAP ABSENSI</span>
             </div>
-            <button
-              onClick={() => {
-                setModalDate(new Date().toISOString().slice(0, 10));
-                setAttendanceModalOpen(true);
-              }}
-              className="text-[10px] text-[#00F0FF] hover:underline"
-            >
-              + Edit
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleAutoFillAttendance}
+                className="text-[10px] text-[#FFE600] hover:text-[#FFE600]/80 flex items-center gap-1 font-bold bg-[#FFE600]/10 px-2 py-0.5 rounded border border-[#FFE600]/30 transition-all cursor-pointer shadow-xs"
+                title="1-Klik Otomasi isi jadwal kerja dalam periode ini"
+              >
+                <Zap className="w-3 h-3 text-[#FFE600]" /> Otomasi Bulan Ini
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setModalDate(new Date().toISOString().slice(0, 10));
+                  setAttendanceModalOpen(true);
+                }}
+                className="text-[10px] text-[#00F0FF] hover:underline"
+              >
+                + Edit
+              </button>
+            </div>
           </div>
           <div className="mt-3 text-2xl sm:text-3xl font-extrabold font-mono text-white tracking-tight">
             {totalHariMasuk} <span className="text-xs text-[#b9cacb] font-normal">Hari Masuk</span>

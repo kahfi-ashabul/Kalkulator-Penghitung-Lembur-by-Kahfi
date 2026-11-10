@@ -32,6 +32,7 @@ import { exportToCSV, exportToJSON } from '../../utils/exportImport';
 import { playCyberClick, playCyberSuccess } from '../../utils/audio';
 import { useAuth } from '../../context/AuthContext';
 import { triggerPopunder } from '../../utils/adManager';
+import { ExportModal } from '../modals/ExportModal';
 
 interface HistoryScreenProps {
   entries: OvertimeEntry[];
@@ -45,6 +46,7 @@ interface HistoryScreenProps {
   onOpenReceipt: (entry: OvertimeEntry) => void;
   onOpenAttendanceModal?: (date?: string) => void;
   onDeleteAttendance?: (tanggal: string) => void;
+  onOpenProModal?: () => void;
 }
 
 export const HistoryScreen: React.FC<HistoryScreenProps> = ({
@@ -59,6 +61,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   onOpenReceipt,
   onOpenAttendanceModal,
   onDeleteAttendance,
+  onOpenProModal,
 }) => {
   const { isPro } = useAuth();
   // Filter & Search states
@@ -73,6 +76,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
   const [endDate, setEndDate] = useState<string>('2026-11-20');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [activeHistoryTab, setActiveHistoryTab] = useState<'lembur' | 'kehadiran'>('lembur');
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   // Clear all confirmation 2-step modal state
   const [showClearConfirm, setShowClearConfirm] = useState<boolean>(false);
@@ -232,12 +236,25 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
               </button>
             </div>
 
-            {/* Baris 2: Tombol Kelola Berkas (2 Kolom Simetris Ter-stretch) */}
-            <div className="grid grid-cols-2 gap-2 w-full">
+            {/* Baris 2: Tombol Kelola Berkas (3 Kolom Simetris) */}
+            <div className="grid grid-cols-3 gap-2 w-full">
+              <button
+                type="button"
+                onClick={() => {
+                  if (settings.audioFeedback) playCyberClick();
+                  setIsExportModalOpen(true);
+                }}
+                className="h-8.5 px-2 rounded bg-gradient-to-r from-[#39FF14]/20 to-[#00F0FF]/20 border border-[#39FF14]/50 hover:border-[#39FF14] text-white hover:text-[#39FF14] text-[11px] sm:text-xs font-mono font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shadow-[0_0_10px_rgba(57,255,20,0.15)] cursor-pointer"
+                title="Ekspor laporan ke format Excel (.xlsx) atau CSV"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-[#39FF14] shrink-0" />
+                <span>Ekspor Excel</span>
+              </button>
+
               <button
                 type="button"
                 onClick={onOpenImportModal}
-                className="h-8.5 px-2.5 sm:px-3 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#00F0FF] text-white hover:text-[#00F0FF] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
+                className="h-8.5 px-2 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#00F0FF] text-white hover:text-[#00F0FF] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer"
                 title="Pulihkan data lembur dan catatan absensi dari berkas .JSON"
               >
                 <Upload className="w-3.5 h-3.5 text-[#00F0FF] shrink-0" />
@@ -247,7 +264,7 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
               <button
                 type="button"
                 onClick={handleExportJSON}
-                className="h-8.5 px-2.5 sm:px-3 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#FF2BD6] text-white hover:text-[#FF2BD6] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm cursor-pointer"
+                className="h-8.5 px-2 rounded bg-[#1A1A2E] border border-white/15 hover:border-[#FF2BD6] text-white hover:text-[#FF2BD6] text-[11px] sm:text-xs font-mono transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shadow-sm cursor-pointer"
                 title="Backup berkas JSON lengkap"
               >
                 <FileCode className="w-3.5 h-3.5 text-[#FF2BD6] shrink-0" />
@@ -767,6 +784,18 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({
           </div>
         </div>
       )}
+      {/* Modal Ekspor Laporan Excel / CSV */}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        entries={entries}
+        attendanceMap={attendanceMap}
+        settings={settings}
+        isPro={isPro}
+        onOpenProModal={() => onOpenProModal?.()}
+        initialStartDate={activeDateRange?.startDate}
+        initialEndDate={activeDateRange?.endDate}
+      />
     </div>
   );
 };
