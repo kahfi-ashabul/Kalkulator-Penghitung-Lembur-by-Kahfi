@@ -82,6 +82,14 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
   const [tunjanganTetapStr, setTunjanganTetapStr] = useState<string>((settings.defaultTunjangan || 0).toLocaleString('id-ID'));
   const [manualOvertime, setManualOvertime] = useState<number>(0);
   const [manualOvertimeStr, setManualOvertimeStr] = useState<string>('0');
+  const [manualOvertimeHours, setManualOvertimeHours] = useState<number>(0);
+  const [manualOvertimeHoursStr, setManualOvertimeHoursStr] = useState<string>('0');
+
+  // Tunjangan tidak tetap & bonus
+  const [tunjanganKehadiran, setTunjanganKehadiran] = useState<number>(0);
+  const [tunjanganKehadiranStr, setTunjanganKehadiranStr] = useState<string>('0');
+  const [tambahanLain, setTambahanLain] = useState<number>(0);
+  const [tambahanLainStr, setTambahanLainStr] = useState<string>('0');
 
   // Harian inputs (Otomatis mode 'custom' jika profil karyawan disetel Mode Gaji Harian)
   const [upahHarianMode, setUpahHarianMode] = useState<'derived' | 'custom'>(
@@ -135,21 +143,28 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
     }
   }, [useStoredAttendance, attendanceStats.masuk, settings.defaultSistem]);
 
-  // Overtime sum from Riwayat for selected cut-off date range
+  // Overtime sum & hours from Riwayat for selected cut-off date range
   const storedOvertimeAmount = useMemo(() => {
     return entries
       .filter((e) => e.tanggal >= activeDateRange.startDate && e.tanggal <= activeDateRange.endDate)
       .reduce((acc, curr) => acc + curr.totalLembur, 0);
   }, [entries, activeDateRange]);
 
+  const storedOvertimeHours = useMemo(() => {
+    return entries
+      .filter((e) => e.tanggal >= activeDateRange.startDate && e.tanggal <= activeDateRange.endDate)
+      .reduce((acc, curr) => acc + curr.jamLembur, 0);
+  }, [entries, activeDateRange]);
+
   const activeOvertimeAmount = useStoredOvertime ? storedOvertimeAmount : manualOvertime;
+  const activeOvertimeHours = useStoredOvertime ? storedOvertimeHours : manualOvertimeHours;
 
   // Derived daily rate
   const derivedUpahHarian = Math.round(gajiPokok / (pembagiHari || 1));
   const effectiveUpahHarian = upahHarianMode === 'derived' ? derivedUpahHarian : customUpahHarian;
 
   // Calculations for Bulanan Mode
-  const gajiKotorBulanan = gajiPokok + tunjanganTetap + activeOvertimeAmount;
+  const gajiKotorBulanan = gajiPokok + tunjanganTetap + activeOvertimeAmount + tunjanganKehadiran + tambahanLain;
   const totalPotongan = 
     (deductions.bpjsKetenagakerjaan || 0) +
     (deductions.bpjsKesehatan || 0) +
@@ -161,7 +176,7 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
 
   // Calculations for Harian Mode
   const pendapatanHarianTotal = effectiveUpahHarian * jumlahHariMasuk;
-  const gajiKotorHarian = pendapatanHarianTotal + activeOvertimeAmount;
+  const gajiKotorHarian = pendapatanHarianTotal + activeOvertimeAmount + tunjanganKehadiran + tambahanLain;
   const takeHomePayHarian = Math.max(0, gajiKotorHarian - totalPotongan);
 
   const finalTakeHomePay = mode === 'bulanan' ? takeHomePayBulanan : takeHomePayHarian;
@@ -208,7 +223,9 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
       isBulanan
         ? `  • Gaji Pokok       : ${formatRupiah(gajiPokok)}\n  • Tunjangan Tetap  : ${formatRupiah(tunjanganTetap)}`
         : `  • Upah Harian (${jumlahHariMasuk} Hari) : ${formatRupiah(pendapatanHarianTotal)}`,
-      `  • Hak Upah Lembur  : ${formatRupiah(activeOvertimeAmount)}`,
+      `  • Hak Upah Lembur (${activeOvertimeHours.toFixed(1)} Jam) : ${formatRupiah(activeOvertimeAmount)}`,
+      tunjanganKehadiran > 0 ? `  • Tunjangan Kehadiran / Uang Harian (${jumlahHariMasuk} Hari) : ${formatRupiah(tunjanganKehadiran)}` : '',
+      tambahanLain > 0 ? `  • Tambahan & Bonus Lainnya : ${formatRupiah(tambahanLain)}` : '',
       `👉 *TOTAL PENGHASILAN KOTOR: ${formatRupiah(finalGajiKotor)}*`,
       `-----------------------------------------`,
       `✂️ *KOMPONEN POTONGAN:*`,
@@ -331,13 +348,14 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
       periode: activeDateRange.label,
       tanggalCetak: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
       theme: settings.theme || 'dark',
+      mode,
       gajiPokok: mode === 'bulanan' ? gajiPokok : pendapatanHarianTotal,
       tunjanganTetap: mode === 'bulanan' ? tunjanganTetap : 0,
       totalUangLembur: activeOvertimeAmount,
-      totalJamLembur: 0,
-      totalTunjanganKehadiran: 0,
+      totalJamLembur: activeOvertimeHours,
+      totalTunjanganKehadiran: tunjanganKehadiran,
       hariMasuk: jumlahHariMasuk,
-      totalTambahanLain: 0,
+      totalTambahanLain: tambahanLain,
       totalPotongan,
       potonganDetail: [
         { nama: 'BPJS Ketenagakerjaan', nominal: deductions.bpjsKetenagakerjaan || 0 },
@@ -703,6 +721,122 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                 </div>
               </div>
             )}
+
+            {/* Tunjangan Tidak Tetap & Tambahan Penghasilan (Berlaku untuk Bulanan & Harian) */}
+            <div className="pt-4 border-t border-white/10 space-y-3">
+              <div className="text-xs font-mono font-bold text-[#b9cacb] flex items-center justify-between">
+                <span>TUNJANGAN TIDAK TETAP & TAMBAHAN PENGHASILAN</span>
+                <span className="text-[10px] text-[#7A7A99] font-normal">(Opsional)</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Tunjangan Kehadiran / Uang Harian */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-mono text-[#b9cacb] block">
+                      Tunjangan Kehadiran / Uang Harian (Rp)
+                    </label>
+                    {tunjanganKehadiran > 0 && (
+                      <span className="text-[10px] text-[#39FF14] font-mono font-bold">
+                        +{formatRupiah(tunjanganKehadiran)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative flex items-center mb-1.5">
+                    <span className="absolute left-3 font-mono text-xs font-bold text-[#00F0FF] bg-[#00F0FF]/10 px-1.5 py-0.5 rounded border border-[#00F0FF]/30">
+                      Rp
+                    </span>
+                    <input
+                      type="text"
+                      value={tunjanganKehadiranStr}
+                      placeholder="0"
+                      onChange={(e) => {
+                        const raw = parseRupiah(e.target.value);
+                        setTunjanganKehadiran(raw);
+                        setTunjanganKehadiranStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                      }}
+                      className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#00F0FF]"
+                    />
+                  </div>
+                  {/* Preset cepat uang harian berdasarkan hari masuk */}
+                  <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-[#7A7A99]">
+                    <span>Preset ({jumlahHariMasuk} hr):</span>
+                    {[15000, 20000, 25000, 50000].map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => {
+                          const total = rate * (jumlahHariMasuk || 1);
+                          setTunjanganKehadiran(total);
+                          setTunjanganKehadiranStr(total.toLocaleString('id-ID'));
+                        }}
+                        className="px-1.5 py-0.5 rounded bg-[#1A1A2E] border border-white/10 hover:border-[#00F0FF] hover:text-[#00F0FF] text-white transition-all cursor-pointer"
+                        title={`${formatRupiah(rate)}/hari × ${jumlahHariMasuk} hari`}
+                      >
+                        {rate / 1000}k
+                      </button>
+                    ))}
+                    {tunjanganKehadiran > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTunjanganKehadiran(0);
+                          setTunjanganKehadiranStr('');
+                        }}
+                        className="text-[#ffb4ab] hover:underline ml-1"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tambahan & Bonus Lainnya */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-mono text-[#b9cacb] block">
+                      Tambahan & Bonus Lainnya (Rp)
+                    </label>
+                    {tambahanLain > 0 && (
+                      <span className="text-[10px] text-[#39FF14] font-mono font-bold">
+                        +{formatRupiah(tambahanLain)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative flex items-center mb-1.5">
+                    <span className="absolute left-3 font-mono text-xs font-bold text-[#00F0FF] bg-[#00F0FF]/10 px-1.5 py-0.5 rounded border border-[#00F0FF]/30">
+                      Rp
+                    </span>
+                    <input
+                      type="text"
+                      value={tambahanLainStr}
+                      placeholder="0"
+                      onChange={(e) => {
+                        const raw = parseRupiah(e.target.value);
+                        setTambahanLain(raw);
+                        setTambahanLainStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                      }}
+                      className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#00F0FF]"
+                    />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-[#7A7A99]">
+                    <span>Insentif, performa, THR, atau bonus proyek</span>
+                    {tambahanLain > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTambahanLain(0);
+                          setTambahanLainStr('');
+                        }}
+                        className="text-[#ffb4ab] hover:underline ml-auto"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Section 2: Integrasi Upah Lembur */}
@@ -766,7 +900,9 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                   </div>
 
                   <div className="text-right">
-                    <span className="text-[#7A7A99] text-[10px] block">Lembur Ditarik:</span>
+                    <span className="text-[#7A7A99] text-[10px] block">
+                      Total Lembur ({storedOvertimeHours.toFixed(1)} Jam):
+                    </span>
                     <span className="text-sm font-bold text-[#39FF14]">
                       {formatRupiah(storedOvertimeAmount)}
                     </span>
@@ -835,20 +971,40 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                 )}
               </div>
             ) : (
-              <div>
-                <label className="text-xs font-mono text-[#b9cacb] mb-1 block">
-                  Nominal Upah Lembur Tambahan (Rp)
-                </label>
-                <input
-                  type="text"
-                  value={manualOvertimeStr}
-                  onChange={(e) => {
-                    const raw = parseRupiah(e.target.value);
-                    setManualOvertime(raw);
-                    setManualOvertimeStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
-                  }}
-                  className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#00F0FF]"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-mono text-[#b9cacb] mb-1 block">
+                    Total Jam Lembur (Jam)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    value={manualOvertimeHoursStr}
+                    placeholder="Contoh: 14.5"
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0;
+                      setManualOvertimeHours(val);
+                      setManualOvertimeHoursStr(e.target.value);
+                    }}
+                    className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#00F0FF]"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-mono text-[#b9cacb] mb-1 block">
+                    Nominal Upah Lembur (Rp)
+                  </label>
+                  <input
+                    type="text"
+                    value={manualOvertimeStr}
+                    onChange={(e) => {
+                      const raw = parseRupiah(e.target.value);
+                      setManualOvertime(raw);
+                      setManualOvertimeStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                    }}
+                    className="w-full px-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#00F0FF]"
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -991,9 +1147,21 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                 </div>
               )}
               <div className="flex justify-between text-[#39FF14] font-semibold">
-                <span>• Hak Upah Lembur</span>
+                <span>• Hak Upah Lembur ({activeOvertimeHours.toFixed(1)} Jam)</span>
                 <span>+{formatRupiah(activeOvertimeAmount)}</span>
               </div>
+              {tunjanganKehadiran > 0 && (
+                <div className="flex justify-between text-[#39FF14]">
+                  <span>• Tunjangan Kehadiran ({jumlahHariMasuk} Hari)</span>
+                  <span>+{formatRupiah(tunjanganKehadiran)}</span>
+                </div>
+              )}
+              {tambahanLain > 0 && (
+                <div className="flex justify-between text-[#39FF14]">
+                  <span>• Tambahan & Bonus Lainnya</span>
+                  <span>+{formatRupiah(tambahanLain)}</span>
+                </div>
+              )}
             </div>
 
             {/* Deductions breakdown */}

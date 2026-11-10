@@ -6,6 +6,7 @@ export interface SalarySlipData {
   periode: string;
   tanggalCetak: string;
   theme?: 'light' | 'dark';
+  mode?: 'bulanan' | 'harian';
   gajiPokok: number;
   tunjanganTetap: number;
   totalUangLembur: number;
@@ -183,8 +184,13 @@ export function generateSalarySlipCanvas(data: SalarySlipData): HTMLCanvasElemen
   ctx.fillText('[A] KOMPONEN PENERIMAAN (PENDAPATAN KOTOR)', 36, curY);
 
   curY += 12;
+  const isHarian = data.mode === 'harian';
   const earnings: Array<{ label: string; sub?: string; val: number }> = [
-    { label: 'Gaji Pokok Bulanan', sub: 'Upah Pokok Sesuai PKWT/PKWTT', val: data.gajiPokok },
+    {
+      label: isHarian ? `Upah Harian (${data.hariMasuk} Hari)` : 'Gaji Pokok Bulanan',
+      sub: isHarian ? 'Berdasarkan kehadiran kerja harian' : 'Upah Pokok Sesuai PKWT/PKWTT',
+      val: data.gajiPokok,
+    },
     { label: 'Tunjangan Tetap', sub: 'Tunjangan Jabatan / Keahlian Tertulis', val: data.tunjanganTetap },
     {
       label: `Upah Kerja Lembur (${data.totalJamLembur.toFixed(1)} Jam)`,
