@@ -1,36 +1,67 @@
 /**
  * Popunder Ad Manager (Adsterra)
  * - 100% Non-aktif untuk Pengguna PRO
- * - Grace Period: 15 detik pertama sejak sesi web dimulai (tidak ada iklan)
+ * - Grace Period: 60 detik pertama sejak halaman dibuka/direfresh (tidak ada iklan sama sekali)
  * - Cooldown: 60 detik ketat antar kemunculan iklan (tersimpan persisten di localStorage)
- * - Interceptor bawaan: Mencegah script pihak ketiga membuka popup jika cooldown 60 detik belum habis.
+ * - Interceptor bawaan: Mencegah script pihak ketiga membuka popup jika grace period atau cooldown 60 detik belum terpenuhi.
  */
 
 const POPUNDER_SCRIPT_SRC = 'https://afders.org/1/249f44445acb776c0355ed1d59ad6c7a';
-const GRACE_PERIOD_MS = 15 * 1000; // 15 detik
-const COOLDOWN_MS = 60 * 1000;      // 60 detik
+const GRACE_PERIOD_MS = 60 * 1000; // 60 detik penuh
+const COOLDOWN_MS = 60 * 1000;     // 60 detik penuh
 
 const STORAGE_KEY_LAST_AD = 'kei_last_popunder_time';
-const SESSION_KEY_START = 'kei_session_start_time';
 
-// Inisialisasi session start time jika belum tercatat di tab ini
-if (typeof window !== 'undefined') {
-  if (!sessionStorage.getItem(SESSION_KEY_START)) {
-    sessionStorage.setItem(SESSION_KEY_START, Date.now().toString());
+// Waktu saat halaman dimuat di memori tab ini
+const pageLoadedAt = typeof window !== 'undefined' ? Date.now() : 0;
+
+// Flag izin sementara saat triggerPopunder secara sah mengizinkan 1 popunder
+let adAuthorizedUntil = 0;
+
+/**
+ * Cek apakah penayangan iklan saat ini diizinkan
+ */
+export function canShowAd(isPro: boolean = false): boolean {
+  if (typeof window === 'undefined') return false;
+
+  const proActive = isPro || (window as any).__KEI_IS_PRO === true;
+  if (proActive) return false;
+
+  const now = Date.now();
+
+  // 1. Grace Period: Wajib tunggu 60 detik sejak tab dimuat
+  if (now - pageLoadedAt < GRACE_PERIOD_MS) {
+    return false;
   }
 
-  // Interceptor global window.open untuk memastikan iklan Adsterra patuh pada cooldown 60 detik
+  // 2. Cooldown: Wajib tunggu 60 detik sejak iklan terakhir
+  const lastAd = parseInt(localStorage.getItem(STORAGE_KEY_LAST_AD) || '0', 10) || 0;
+  if (now - lastAd < COOLDOWN_MS) {
+    return false;
+  }
+
+  return true;
+}
+
+if (typeof window !== 'undefined') {
+  // Jika pengunjung baru pertama kali datang, inisialisasi cooldown agar tidak langsung kena iklan
+  if (!localStorage.getItem(STORAGE_KEY_LAST_AD)) {
+    localStorage.setItem(STORAGE_KEY_LAST_AD, Date.now().toString());
+  }
+
+  // Interceptor global window.open untuk memastikan iklan Adsterra patuh pada aturan 60s
   const originalOpen = window.open;
   window.open = function (url?: string | URL, target?: string, features?: string): Window | null {
     const urlStr = url ? url.toString() : '';
 
-    // 1. Izinkan selalu WhatsApp dan navigasi internal aplikasi
+    // 1. Izinkan selalu WhatsApp, link internal, atau blob download
     if (
       urlStr.includes('whatsapp.com') ||
       urlStr.includes('wa.me') ||
       urlStr.includes(window.location.hostname) ||
       urlStr.startsWith('/') ||
-      urlStr.startsWith('blob:')
+      urlStr.startsWith('blob:') ||
+      urlStr === ''
     ) {
       return originalOpen.call(window, url, target, features);
     }
@@ -42,16 +73,16 @@ if (typeof window !== 'undefined') {
     }
 
     const now = Date.now();
-    const sessionStart = parseInt(sessionStorage.getItem(SESSION_KEY_START) || '0', 10) || now;
-    const lastAd = parseInt(localStorage.getItem(STORAGE_KEY_LAST_AD) || '0', 10) || 0;
 
-    // 3. Grace period 15 detik di awal sesi
-    if (now - sessionStart < GRACE_PERIOD_MS) {
-      return null;
+    // 3. Jika baru saja diotorisasi oleh triggerPopunder dalam jendela 5 detik
+    if (now < adAuthorizedUntil) {
+      adAuthorizedUntil = 0;
+      localStorage.setItem(STORAGE_KEY_LAST_AD, now.toString());
+      return originalOpen.call(window, url, target, features);
     }
 
-    // 4. Cooldown ketat 60 detik
-    if (now - lastAd < COOLDOWN_MS) {
+    // 4. Periksa apakah syarat 60 detik terpenuhi
+    if (!canShowAd(isPro)) {
       return null;
     }
 
@@ -60,7 +91,7 @@ if (typeof window !== 'undefined') {
     return originalOpen.call(window, url, target, features);
   };
 
-  // Interceptor event klik tautan iklan di fase capture sebelum script iklan mengeksekusi
+  // Interceptor event klik tautan iklan di fase capture
   document.addEventListener(
     'click',
     (e) => {
@@ -69,24 +100,32 @@ if (typeof window !== 'undefined') {
       if (!anchor || !anchor.href) return;
 
       const href = anchor.href;
-      // Jangan cegat link WhatsApp atau link internal
+      // Jangan cegat link WhatsApp atau link internal aplikasi
       if (
         href.includes('whatsapp.com') ||
         href.includes('wa.me') ||
         href.includes(window.location.hostname) ||
         href.startsWith('/') ||
-        href.startsWith('blob:')
+        href.startsWith('blob:') ||
+        href.startsWith('javascript:') ||
+        href === '#' ||
+        href === window.location.href
       ) {
         return;
       }
 
       const isPro = (window as any).__KEI_IS_PRO === true;
       const now = Date.now();
-      const sessionStart = parseInt(sessionStorage.getItem(SESSION_KEY_START) || '0', 10) || now;
-      const lastAd = parseInt(localStorage.getItem(STORAGE_KEY_LAST_AD) || '0', 10) || 0;
 
-      // Blokir jika PRO, atau masih dalam grace period 15s, atau cooldown 60s belum lewat
-      if (isPro || now - sessionStart < GRACE_PERIOD_MS || now - lastAd < COOLDOWN_MS) {
+      // Izinkan jika ada otorisasi aktif
+      if (now < adAuthorizedUntil) {
+        adAuthorizedUntil = 0;
+        localStorage.setItem(STORAGE_KEY_LAST_AD, now.toString());
+        return;
+      }
+
+      // Blokir jika PRO, atau masih dalam grace period 60s, atau cooldown 60s
+      if (!canShowAd(isPro)) {
         e.preventDefault();
         e.stopPropagation();
         return;
@@ -99,40 +138,23 @@ if (typeof window !== 'undefined') {
   );
 }
 
+/**
+ * Pemicu popunder saat user berinteraksi penting (ganti tab, simpan, ekspor)
+ */
 export function triggerPopunder(isPro: boolean = false): boolean {
   if (typeof window !== 'undefined') {
     (window as any).__KEI_IS_PRO = isPro;
   }
 
-  // 1. Akun PRO bebas iklan total
-  if (isPro) {
+  // Cek apakah memenuhi syarat 60s grace period & 60s cooldown
+  if (!canShowAd(isPro)) {
     return false;
   }
 
   const now = Date.now();
-  const sessionStart =
-    typeof window !== 'undefined'
-      ? parseInt(sessionStorage.getItem(SESSION_KEY_START) || '0', 10) || now
-      : now;
-  const lastAd =
-    typeof window !== 'undefined'
-      ? parseInt(localStorage.getItem(STORAGE_KEY_LAST_AD) || '0', 10) || 0
-      : 0;
-
-  // 2. Grace period di awal (15 detik)
-  if (now - sessionStart < GRACE_PERIOD_MS) {
-    return false;
-  }
-
-  // 3. Cooldown 60 detik ketat
-  if (now - lastAd < COOLDOWN_MS) {
-    return false;
-  }
-
-  // Pemicu valid: Catat timestamp ke localStorage
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY_LAST_AD, now.toString());
-  }
+  // Berikan jendela otorisasi 5 detik untuk script popunder membuka jendela
+  adAuthorizedUntil = now + 5000;
+  localStorage.setItem(STORAGE_KEY_LAST_AD, now.toString());
 
   // Injeksi/jalankan script popunder Adsterra secara dinamis
   try {

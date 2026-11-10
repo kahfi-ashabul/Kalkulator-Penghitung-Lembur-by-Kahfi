@@ -220,12 +220,22 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
     const raw = parseRupiah(e.target.value);
     setGajiPokok(raw);
     setGajiPokokStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+    const cur = getStoredSettings();
+    saveStoredSettings({
+      ...cur,
+      defaultGajiPokok: raw,
+    });
   };
 
   const handleTunjanganChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = parseRupiah(e.target.value);
     setTunjanganTetap(raw);
     setTunjanganTetapStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+    const cur = getStoredSettings();
+    saveStoredSettings({
+      ...cur,
+      defaultTunjangan: raw,
+    });
   };
 
   const handleTanggalChange = (newDate: string) => {
@@ -514,6 +524,11 @@ export const OvertimeCalculatorScreen: React.FC<OvertimeCalculatorScreenProps> =
                           const r = parseRupiah(e.target.value);
                           setUpahHarianPokok(r);
                           setUpahHarianPokokStr(r > 0 ? r.toLocaleString('id-ID') : '');
+                          const cur = getStoredSettings();
+                          saveStoredSettings({
+                            ...cur,
+                            defaultUpahHarian: r,
+                          });
                         }}
                         className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#39FF14]"
                         placeholder="Contoh: 200.000"

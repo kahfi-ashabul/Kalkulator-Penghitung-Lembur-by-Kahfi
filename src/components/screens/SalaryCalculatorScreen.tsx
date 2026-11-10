@@ -25,6 +25,7 @@ import { playCyberClick, playCyberSuccess } from '../../utils/audio';
 import { downloadSalarySlipPNG } from '../../utils/salarySlipGenerator';
 import { useAuth } from '../../context/AuthContext';
 import { triggerPopunder } from '../../utils/adManager';
+import { getStoredSettings, saveStoredSettings } from '../../utils/storage';
 
 interface SalaryCalculatorScreenProps {
   entries: OvertimeEntry[];
@@ -392,6 +393,11 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                         const raw = parseRupiah(e.target.value);
                         setGajiPokok(raw);
                         setGajiPokokStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                        const cur = getStoredSettings();
+                        saveStoredSettings({
+                          ...cur,
+                          defaultGajiPokok: raw,
+                        });
                       }}
                       className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#00F0FF]"
                     />
@@ -413,6 +419,11 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                         const raw = parseRupiah(e.target.value);
                         setTunjanganTetap(raw);
                         setTunjanganTetapStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                        const cur = getStoredSettings();
+                        saveStoredSettings({
+                          ...cur,
+                          defaultTunjangan: raw,
+                        });
                       }}
                       className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#00F0FF]"
                     />
@@ -480,6 +491,11 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                           const raw = parseRupiah(e.target.value);
                           setGajiPokok(raw);
                           setGajiPokokStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                          const cur = getStoredSettings();
+                          saveStoredSettings({
+                            ...cur,
+                            defaultGajiPokok: raw,
+                          });
                         }}
                         className="w-full px-3 py-1.5 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-xs focus:outline-none focus:border-[#FF2BD6]"
                       />
@@ -525,6 +541,11 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
                           const raw = parseRupiah(e.target.value);
                           setCustomUpahHarian(raw);
                           setCustomUpahHarianStr(raw > 0 ? raw.toLocaleString('id-ID') : '');
+                          const cur = getStoredSettings();
+                          saveStoredSettings({
+                            ...cur,
+                            defaultUpahHarian: raw,
+                          });
                         }}
                         className="w-full pl-13 pr-3 py-2 rounded bg-[#1A1A2E] border border-white/10 text-white font-mono text-sm focus:outline-none focus:border-[#FF2BD6]"
                       />
