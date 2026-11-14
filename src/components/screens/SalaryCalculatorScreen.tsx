@@ -23,10 +23,11 @@ import {
 import { OvertimeEntry, UserSettings, Deductions, AttendanceRecord } from '../../types/overtime';
 import { formatRupiah, parseRupiah, getCutoffDateRange } from '../../utils/calculations';
 import { playCyberClick, playCyberSuccess } from '../../utils/audio';
-import { downloadSalarySlipPNG } from '../../utils/salarySlipGenerator';
+import { downloadSalarySlipPNG, SalarySlipData } from '../../utils/salarySlipGenerator';
 import { useAuth } from '../../context/AuthContext';
 import { triggerPopunder } from '../../utils/adManager';
 import { getStoredSettings, saveStoredSettings } from '../../utils/storage';
+import { SalarySlipModal } from '../modals/SalarySlipModal';
 
 interface SalaryCalculatorScreenProps {
   entries: OvertimeEntry[];
@@ -113,6 +114,7 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
 
   const [copied, setCopied] = useState<boolean>(false);
   const [useStoredAttendance, setUseStoredAttendance] = useState<boolean>(true);
+  const [isSlipModalOpen, setIsSlipModalOpen] = useState<boolean>(false);
 
   // Cut-off date range object
   const activeDateRange = useMemo(() => {
@@ -339,35 +341,51 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
     setTimeout(() => setShareToast(null), 3000);
   };
 
-  const handleDownloadSalarySlip = () => {
-    triggerPopunder(isPro);
-    if (settings.audioFeedback) playCyberSuccess();
-    downloadSalarySlipPNG({
-      namaKaryawan: settings.namaKaryawan || 'Karyawan',
-      namaPerusahaan: settings.namaPerusahaan || 'Kei Project',
-      periode: activeDateRange.label,
-      tanggalCetak: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-      theme: settings.theme || 'dark',
-      mode,
-      gajiPokok: mode === 'bulanan' ? gajiPokok : pendapatanHarianTotal,
-      tunjanganTetap: mode === 'bulanan' ? tunjanganTetap : 0,
-      totalUangLembur: activeOvertimeAmount,
-      totalJamLembur: activeOvertimeHours,
-      totalTunjanganKehadiran: tunjanganKehadiran,
-      hariMasuk: jumlahHariMasuk,
-      totalTambahanLain: tambahanLain,
-      totalPotongan,
-      potonganDetail: [
-        { nama: 'BPJS Ketenagakerjaan', nominal: deductions.bpjsKetenagakerjaan || 0 },
-        { nama: 'BPJS Kesehatan (1%)', nominal: deductions.bpjsKesehatan || 0 },
-        { nama: 'PPh 21 / Pajak', nominal: deductions.pph21 || 0 },
-        { nama: 'Kasbon / Pinjaman', nominal: deductions.kasbon || 0 },
-        { nama: 'Potongan Lainnya', nominal: deductions.lainnya || 0 },
-      ].filter((p) => p.nominal > 0),
-      takeHomePay: finalTakeHomePay,
-    });
-    setShareToast('Gambar Slip Gaji PNG (2x Retina) berhasil diunduh!');
-    setTimeout(() => setShareToast(null), 3000);
+  const currentSalarySlipData: SalarySlipData = useMemo(() => ({
+    namaKaryawan: settings.namaKaryawan || 'Karyawan',
+    namaPerusahaan: settings.namaPerusahaan || 'Perusahaan',
+    periode: activeDateRange.label,
+    tanggalCetak: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+    theme: (settings.theme === 'light' ? 'light' : 'dark'),
+    mode,
+    gajiPokok: mode === 'bulanan' ? gajiPokok : pendapatanHarianTotal,
+    tunjanganTetap: mode === 'bulanan' ? tunjanganTetap : 0,
+    totalUangLembur: activeOvertimeAmount,
+    totalJamLembur: activeOvertimeHours,
+    totalTunjanganKehadiran: tunjanganKehadiran,
+    hariMasuk: jumlahHariMasuk,
+    totalTambahanLain: tambahanLain,
+    totalPotongan,
+    potonganDetail: [
+      { nama: 'BPJS Ketenagakerjaan', nominal: deductions.bpjsKetenagakerjaan || 0 },
+      { nama: 'BPJS Kesehatan (1%)', nominal: deductions.bpjsKesehatan || 0 },
+      { nama: 'PPh 21 / Pajak', nominal: deductions.pph21 || 0 },
+      { nama: 'Kasbon / Pinjaman', nominal: deductions.kasbon || 0 },
+      { nama: 'Potongan Lainnya', nominal: deductions.lainnya || 0 },
+    ].filter((p) => p.nominal > 0),
+    takeHomePay: finalTakeHomePay,
+  }), [
+    settings.namaKaryawan,
+    settings.namaPerusahaan,
+    settings.theme,
+    activeDateRange.label,
+    mode,
+    gajiPokok,
+    pendapatanHarianTotal,
+    tunjanganTetap,
+    activeOvertimeAmount,
+    activeOvertimeHours,
+    tunjanganKehadiran,
+    jumlahHariMasuk,
+    tambahanLain,
+    totalPotongan,
+    deductions,
+    finalTakeHomePay,
+  ]);
+
+  const handleOpenSalarySlipModal = () => {
+    if (settings.audioFeedback) playCyberClick();
+    setIsSlipModalOpen(true);
   };
 
   const handleQuickPresetPotongan = () => {
@@ -1205,9 +1223,9 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
           {/* Action buttons - 2x2 Grid dengan Ekspor Gambar PNG & WhatsApp */}
           <div className="grid grid-cols-2 gap-2.5 font-mono text-xs">
             <button
-              onClick={handleDownloadSalarySlip}
-              className="py-2.5 px-3 rounded bg-gradient-to-r from-[#FF2BD6] to-[#9333EA] text-white font-bold hover:opacity-95 transition-all shadow-[0_0_14px_rgba(255,43,214,0.35)] flex items-center justify-center gap-1.5"
-              title="Unduh Slip Gaji sebagai Gambar PNG beresolusi tinggi (2x Retina)"
+              onClick={handleOpenSalarySlipModal}
+              className="py-2.5 px-3 rounded bg-gradient-to-r from-[#FF2BD6] to-[#9333EA] text-white font-bold hover:opacity-95 transition-all shadow-[0_0_14px_rgba(255,43,214,0.35)] flex items-center justify-center gap-1.5 cursor-pointer"
+              title="Pratinjau & Ekspor Slip Gaji sebagai Gambar PNG beresolusi tinggi (2x Retina)"
             >
               <FileImage className="w-4 h-4" />
               <span>Slip PNG</span>
@@ -1249,6 +1267,25 @@ export const SalaryCalculatorScreen: React.FC<SalaryCalculatorScreenProps> = ({
           )}
         </div>
       </div>
+
+      {/* Modal Ekspor Slip Gaji Gambar PNG (Pratinjau Live & Cetak PDF) */}
+      <SalarySlipModal
+        isOpen={isSlipModalOpen}
+        onClose={() => setIsSlipModalOpen(false)}
+        data={currentSalarySlipData}
+        defaultNama={settings.namaKaryawan || 'Karyawan'}
+        defaultPerusahaan={settings.namaPerusahaan || 'Perusahaan'}
+        appTheme={settings.theme === 'light' ? 'light' : 'dark'}
+        isPro={isPro}
+        onSaveProfileSettings={(nama, perusahaan) => {
+          const cur = getStoredSettings();
+          saveStoredSettings({
+            ...cur,
+            namaKaryawan: nama,
+            namaPerusahaan: perusahaan,
+          });
+        }}
+      />
     </div>
   );
 };

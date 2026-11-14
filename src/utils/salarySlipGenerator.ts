@@ -356,6 +356,14 @@ export function generateSalarySlipCanvas(data: SalarySlipData): HTMLCanvasElemen
 }
 
 /**
+ * Generate data URL string for previewing Salary Slip
+ */
+export function generateSalarySlipImage(data: SalarySlipData): string {
+  const canvas = generateSalarySlipCanvas(data);
+  return canvas.toDataURL('image/png');
+}
+
+/**
  * Trigger download slip gaji as PNG directly
  */
 export function downloadSalarySlipPNG(data: SalarySlipData, filename?: string): void {
