@@ -45,6 +45,16 @@ export async function syncLocalToCloud(userId: string): Promise<{ success: boole
     overtimeEntries.forEach((e) => dateSet.add(e.tanggal));
 
     if (dateSet.size === 0) {
+      // Jika data lokal sudah kosong (misal setelah hapus semua riwayat & absensi), bersihkan juga di cloud
+      const { error: delErr } = await supabase
+        .from('attendance_records')
+        .delete()
+        .eq('user_id', userId);
+
+      if (delErr) {
+        console.error('Gagal menghapus data cloud saat lokal kosong:', delErr);
+      }
+      localStorage.removeItem('lembur_last_cloud_sync');
       return { success: true, count: 0 };
     }
 
@@ -73,6 +83,26 @@ export async function syncLocalToCloud(userId: string): Promise<{ success: boole
     if (error) {
       console.error('Gagal sinkronisasi data ke cloud:', error);
       return { success: false, count: 0, error: error.message };
+    }
+
+    // Bersihkan tanggal di cloud yang sudah dihapus oleh pengguna di lokal
+    const { data: cloudRows } = await supabase
+      .from('attendance_records')
+      .select('date')
+      .eq('user_id', userId);
+
+    if (cloudRows && cloudRows.length > 0) {
+      const datesToDelete = cloudRows
+        .map((r: { date: string }) => r.date)
+        .filter((d: string) => !dateSet.has(d));
+
+      if (datesToDelete.length > 0) {
+        await supabase
+          .from('attendance_records')
+          .delete()
+          .eq('user_id', userId)
+          .in('date', datesToDelete);
+      }
     }
 
     localStorage.setItem('lembur_last_cloud_sync', nowIso);
@@ -139,5 +169,32 @@ export async function syncCloudToLocal(userId: string): Promise<{ success: boole
   } catch (err: any) {
     console.error('Error saat syncCloudToLocal:', err);
     return { success: false, count: 0, error: err?.message || 'Gagal memuat data cloud' };
+  }
+}
+
+/**
+ * Menghapus seluruh data absensi & lembur milik user di Supabase Cloud
+ */
+export async function clearCloudData(userId: string): Promise<{ success: boolean; error?: string }> {
+  if (!isSupabaseConfigured || !userId) {
+    return { success: false, error: 'Klien Supabase belum siap atau user belum login' };
+  }
+
+  try {
+    const { error } = await supabase
+      .from('attendance_records')
+      .delete()
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Gagal menghapus data cloud:', error);
+      return { success: false, error: error.message };
+    }
+
+    localStorage.removeItem('lembur_last_cloud_sync');
+    return { success: true };
+  } catch (err: any) {
+    console.error('Error saat clearCloudData:', err);
+    return { success: false, error: err?.message || 'Gagal menghapus data cloud' };
   }
 }

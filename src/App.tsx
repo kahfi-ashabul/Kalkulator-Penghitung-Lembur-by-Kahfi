@@ -47,7 +47,7 @@ import {
 import { playCyberClick, playCyberSuccess } from './utils/audio';
 
 function AppInner() {
-  const { isPro, triggerCloudSync } = useAuth();
+  const { isPro, triggerCloudSync, clearCloudData } = useAuth();
 
   // Screen state - Initial Screen is Dashboard Ringkasan Lembur as requested
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('dashboard');
@@ -191,11 +191,14 @@ function AppInner() {
     if (settings.audioFeedback) playCyberClick();
   };
 
-  const handleResetAllData = () => {
+  const handleResetAllData = async () => {
     resetAllAppData();
     setEntries([]);
     setAttendanceMap({});
     setSettings(defaultSettings);
+    if (isPro) {
+      await clearCloudData();
+    }
     if (settings.audioFeedback) playCyberSuccess();
   };
 

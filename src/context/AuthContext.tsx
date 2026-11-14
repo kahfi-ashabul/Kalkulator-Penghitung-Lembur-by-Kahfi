@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured, signInWithGoogle, signOutUser, fetchUserProfile } from '../lib/supabase';
 import { UserProfile, SubscriptionCountdown, calculateRemainingSubscription } from '../types/auth';
-import { syncLocalToCloud, syncCloudToLocal, SyncStatus } from '../services/cloudSync';
+import { syncLocalToCloud, syncCloudToLocal, clearCloudData, SyncStatus } from '../services/cloudSync';
 
 interface AuthContextType {
   user: User | null;
@@ -17,6 +17,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   triggerCloudSync: () => Promise<boolean>;
+  clearCloudData: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,6 +87,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
   }, [user, isPro]);
+
+  // Fungsi untuk menghapus seluruh data cloud jika pengguna mereset aplikasi
+  const handleClearCloudData = useCallback(async (): Promise<boolean> => {
+    if (!user) return false;
+    setSyncStatus((prev) => ({ ...prev, inProgress: true, error: null }));
+    const res = await clearCloudData(user.id);
+    if (res.success) {
+      setSyncStatus({
+        lastSynced: null,
+        inProgress: false,
+        error: null,
+        count: 0,
+      });
+      return true;
+    } else {
+      setSyncStatus((prev) => ({
+        ...prev,
+        inProgress: false,
+        error: res.error || 'Gagal menghapus data cloud',
+      }));
+      return false;
+    }
+  }, [user]);
 
   // Inisialisasi Auth Listener dari Supabase
   useEffect(() => {
@@ -157,6 +181,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout: handleLogout,
         refreshProfile,
         triggerCloudSync,
+        clearCloudData: handleClearCloudData,
       }}
     >
       {children}
